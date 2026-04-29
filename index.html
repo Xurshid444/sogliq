@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Oilaviy sog'liq kuzatuv</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏥</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #f5f6f8; --card: #ffffff; --sec: #eef0f4;
+  --tx: #1a1d23; --tx2: #6b7080; --tx3: #9ca3b0;
+  --br: #e2e4ea; --brh: #c8cbd4;
+  --ac: #0f9e6e; --acl: #e6f5ef; --acd: #0a7a55;
+  --dn: #e8443a; --dnl: #fef0ef;
+  --wn: #e5960b; --wnl: #fef7e8;
+  --inf: #2f7bdf; --infl: #edf4fd;
+  --r: 10px; --rl: 14px; --rxl: 18px;
+  --sh: 0 2px 8px rgba(0,0,0,0.06);
+  --shl: 0 8px 24px rgba(0,0,0,0.1);
+  --f: 'Plus Jakarta Sans', -apple-system, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #111318; --card: #1a1d24; --sec: #22252e;
+    --tx: #e8eaef; --tx2: #9ca3b0; --tx3: #6b7080;
+    --br: #2d3040; --brh: #3d4155;
+    --acl: #0f2e23; --dnl: #2e1615; --wnl: #2e2510; --infl: #152030;
+    --sh: 0 2px 8px rgba(0,0,0,0.3); --shl: 0 8px 24px rgba(0,0,0,0.4);
+  }
+}
+body { font-family: var(--f); background: var(--bg); color: var(--tx); min-height: 100dvh; }
+input, select, textarea, button { font-family: var(--f); }
+.inp {
+  width: 100%; padding: 10px 14px; border: 1.5px solid var(--br); border-radius: var(--r);
+  background: var(--card); color: var(--tx); font-size: 14px; outline: none; transition: border-color 0.15s;
+}
+.inp:focus { border-color: var(--ac); }
+textarea.inp { resize: vertical; min-height: 70px; }
+::placeholder { color: var(--tx3); }
+button { cursor: pointer; }
+.fi { animation: fi 0.25s ease; }
+@keyframes fi { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+@keyframes sp { to { transform: rotate(360deg); } }
+.overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex;
+  align-items: center; justify-content: center; z-index: 1000; padding: 16px; backdrop-filter: blur(4px);
+}
+.modal {
+  background: var(--card); border-radius: var(--rxl); padding: 24px;
+  width: 100%; max-width: 420px; max-height: 85vh; overflow: auto;
+  box-shadow: var(--shl); border: 1px solid var(--br);
+}
+.toast {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+  padding: 10px 20px; border-radius: 30px; font-size: 13px; font-weight: 600;
+  z-index: 2000; color: #fff; box-shadow: var(--shl);
+  animation: fi 0.3s ease;
+}
+#app { max-width: 480px; margin: 0 auto; min-height: 100dvh; background: var(--bg); }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* ═══════════════════════════════
+   Oilaviy sog'liq kuzatuv — v3
+   GitHub = database
+   ═══════════════════════════════ */
+
+const $ = (s, p) => (p||document).querySelector(s);
+const $$ = (s, p) => [...(p||document).querySelectorAll(s)];
+const h = (tag, attrs, ...ch) => {
+  const el = document.createElement(tag);
+  if (attrs) Object.entries(attrs).forEach(([k,v]) => {
+    if (k === 'style' && typeof v === 'object') Object.assign(el.style, v);
+    else if (k.startsWith('on')) el.addEventListener(k.slice(2).toLowerCase(), v);
+    else if (k === 'className') el.className = v;
+    else if (k === 'html') el.innerHTML = v;
+    else el.setAttribute(k, v);
+  });
+  ch.flat(9).forEach(c => { if (c != null) el.append(typeof c === 'string' ? c : c); });
+  return el;
+};
+
+const CONF_KEY = "sogliq_cfg_v4";
+const COLORS = ["#0f9e6e","#2f7bdf","#e8443a","#9b59b6","#e5960b","#e84393","#00b894","#6c5ce7","#fd7e40"];
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+const fmtD = d => d ? new Date(d).toLocaleDateString("uz-UZ",{year:"numeric",month:"short",day:"numeric"}) : "";
+
+const EMPTY = {
+  members: [],
+  testTypes: [
+    { id:"t1", name:"Qondagi qand (Glukoza)", unit:"mmol/l", min:3.9, max:6.1 },
+    { id:"t2", name:"Gemoglobin", unit:"g/l", min:120, max:160 },
+    { id:"t3", name:"Umumiy xolesterin", unit:"mmol/l", min:3.6, max:5.2 },
+    { id:"t4", name:"Leykotsitlar (WBC)", unit:"10⁹/l", min:4.0, max:9.0 },
+    { id:"t5", name:"Eritrotsitlar (RBC)", unit:"10¹²/l", min:3.8, max:5.8 },
+    { id:"t6", name:"Trombotsitlar", unit:"10⁹/l", min:150, max:400 },
+  ],
+  doctorTypes: [
+    { id:"d1", name:"Terapevt" },{ id:"d2", name:"Kardiolog" },
+    { id:"d3", name:"Endokrinolog" },{ id:"d4", name:"Nevropatolog" },
+    { id:"d5", name:"Lor" },{ id:"d6", name:"Ginekolog" },
+  ],
+  tests: [],
+  visits: [],
+};
+
+/* ═══ GitHub DB ═══ */
+class GDB {
+  constructor(o,r,t,p="data.json"){ this.o=o; this.r=r; this.t=t; this.p=p; this.sha=null; }
+  get hd(){ return {"Authorization":`Bearer ${this.t}`,"Accept":"application/vnd.github.v3+json","Content-Type":"application/json"}; }
+  get url(){ return `https://api.github.com/repos/${this.o}/${this.r}/contents/${this.p}`; }
+  async read(){
+    const res = await fetch(this.url,{headers:this.hd});
+    if(res.status===404){ this.sha=null; return null; }
+    if(!res.ok) throw new Error(`GitHub ${res.status}`);
+    const j = await res.json(); this.sha = j.sha;
+    return JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(j.content.replace(/\n/g,"")),(c)=>c.charCodeAt(0))));
+  }
+  async write(data){
+    const body = { message:`Yangilandi — ${new Date().toLocaleString("uz-UZ")}`, content: btoa(unescape(encodeURIComponent(JSON.stringify(data,null,2)))) };
+    if(this.sha) body.sha = this.sha;
+    const res = await fetch(this.url,{method:"PUT",headers:this.hd,body:JSON.stringify(body)});
+    if(res.status===409){ await this.read(); return this.write(data); }
+    if(!res.ok){ const e=await res.json().catch(()=>({})); throw new Error(e.message||`GitHub ${res.status}`); }
+    this.sha = (await res.json()).content.sha;
+  }
+  async test(){
+    const res = await fetch(`https://api.github.com/repos/${this.o}/${this.r}`,{headers:this.hd});
+    if(!res.ok) throw new Error(res.status===404?"Repo topilmadi":res.status===401?"Token noto'g'ri":`Xatolik ${res.status}`);
+    const rp = await res.json();
+    if(!rp.permissions?.push) throw new Error("Token yozish huquqiga ega emas");
+  }
+}
+
+/* ═══ App State ═══ */
+let cfg = null;
+let db = null;
+let D = null; // data
+let saving = false;
+let currentView = "home";
+let selMember = null;
+let selTab = "tests";
+let chartInstance = null;
+let toastTimer = null;
+
+function loadCfg(){ try { return JSON.parse(localStorage.getItem(CONF_KEY)); } catch{ return null; } }
+function saveCfg(c){ localStorage.setItem(CONF_KEY, JSON.stringify(c)); cfg=c; }
+
+function toast(msg, type="ok"){
+  $$('.toast').forEach(t=>t.remove());
+  const t = h('div',{className:'toast fi',style:{background:type==="error"?"var(--dn)":"var(--ac)"}},msg);
+  document.body.append(t);
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.remove(), 3000);
+}
+
+async function loadData(){
+  render(); // show loading
+  try {
+    const result = await db.read();
+    D = result ? {...EMPTY, ...result} : {...EMPTY};
+    if(!result) await db.write(D);
+  } catch(e) {
+    toast("Xatolik: "+e.message,"error");
+    D = {...EMPTY};
+  }
+  currentView = "home";
+  render();
+}
+
+async function saveData(){
+  if(!db) return;
+  saving = true; render();
+  try { await db.write(D); } catch(e){ toast("Saqlashda xatolik: "+e.message,"error"); }
+  saving = false; render();
+}
+
+/* ═══ Helpers ═══ */
+const getMember = id => D.members.find(m=>m.id===id);
+const getTest = id => D.testTypes.find(t=>t.id===id);
+const getDoc = id => D.doctorTypes.find(d=>d.id===id);
+const mTests = mid => D.tests.filter(t=>t.mid===mid).sort((a,b)=>new Date(b.date)-new Date(a.date));
+const mVisits = mid => D.visits.filter(v=>v.mid===mid).sort((a,b)=>new Date(b.date)-new Date(a.date));
+
+function badge(val, mn, mx){
+  if(mn==null||mx==null) return "";
+  const v=parseFloat(val); if(isNaN(v)) return "";
+  const ok = v>=mn && v<=mx;
+  return `<span style="font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;background:${ok?"var(--acl)":"var(--dnl)"};color:${ok?"var(--ac)":"var(--dn)"}">${ok?"Norma":v<mn?"Past ↓":"Yuqori ↑"}</span>`;
+}
+
+/* ═══ Modal helper ═══ */
+function showModal(title, contentFn){
+  $$('.overlay').forEach(o=>o.remove());
+  const overlay = h('div',{className:'overlay'});
+  const modal = h('div',{className:'modal fi'});
+  const header = h('div',{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"20px"}},
+    h('h3',{style:{fontSize:"17px",fontWeight:"700"}},title),
+    h('button',{style:{border:"none",background:"var(--sec)",width:"28px",height:"28px",borderRadius:"50%",fontSize:"16px",color:"var(--tx2)",display:"flex",alignItems:"center",justifyContent:"center"},onClick:()=>overlay.remove()},"×")
+  );
+  modal.append(header);
+  contentFn(modal, ()=>overlay.remove());
+  overlay.append(modal);
+  overlay.addEventListener('click',e=>{ if(e.target===overlay) overlay.remove(); });
+  document.body.append(overlay);
+}
+
+function field(label, inputEl, hint){
+  const d = h('div',{style:{marginBottom:"16px"}});
+  d.append(h('label',{style:{display:"block",fontSize:"13px",fontWeight:"600",color:"var(--tx2)",marginBottom:"6px"}},label));
+  d.append(inputEl);
+  if(hint) d.append(h('div',{style:{fontSize:"11px",color:"var(--tx3)",marginTop:"4px"}},hint));
+  return d;
+}
+
+function makeInput(type="text",placeholder="",val=""){
+  const i = h('input',{type,className:'inp',placeholder,value:val});
+  return i;
+}
+
+function makeSelect(options){
+  const s = h('select',{className:'inp'});
+  options.forEach(([v,t])=>{ const o=h('option',{value:v},t); s.append(o); });
+  return s;
+}
+
+function btn(text, onClick, opts={}){
+  const { full, outline, danger, small } = opts;
+  const s = outline ?
+    {padding:small?"6px 12px":"8px 16px",border:`1.5px solid ${danger?"var(--dn)":"var(--br)"}`,borderRadius:"var(--rxl)",fontSize:small?"12px":"13px",fontWeight:"600",background:"transparent",color:danger?"var(--dn)":"var(--tx)"} :
+    {width:full?"100%":"auto",padding:small?"7px 14px":"10px 20px",border:"none",borderRadius:"var(--rxl)",fontSize:"14px",fontWeight:"600",background:danger?"var(--dn)":"var(--ac)",color:"#fff"};
+  return h('button',{style:s,onClick},text);
+}
+
+/* ═══════════════════
+   RENDER
+   ═══════════════════ */
+
+function render(){
+  const app = $('#app');
+  app.innerHTML = '';
+  if(!cfg) return renderSetup(app);
+  if(!D) { app.append(spinner("GitHub'dan yuklanmoqda...")); return; }
+
+  app.append(renderHeader());
+  const content = h('div',{className:'fi',style:{padding:"16px"}});
+
+  if(currentView==="home") renderHome(content);
+  else if(currentView==="member") renderMember(content);
+  else if(currentView==="compare") renderCompare(content);
+  else if(currentView==="ai") renderAI(content);
+
+  app.append(content);
+}
+
+function spinner(text){
+  return h('div',{style:{textAlign:"center",padding:"60px 20px"}},
+    h('div',{style:{width:"36px",height:"36px",border:"3px solid var(--br)",borderTopColor:"var(--ac)",borderRadius:"50%",animation:"sp 0.7s linear infinite",margin:"0 auto 12px"}}),
+    h('div',{style:{color:"var(--tx2)",fontSize:"14px"}},text||"Yuklanmoqda...")
+  );
+}
+
+/* ═══ SETUP ═══ */
+function renderSetup(app){
+  const wrap = h('div',{style:{maxWidth:"480px",margin:"0 auto",minHeight:"100vh",background:"var(--bg)",display:"flex",flexDirection:"column",justifyContent:"center",padding:"24px"}});
+
+  // Logo
+  wrap.append(h('div',{style:{textAlign:"center",marginBottom:"32px"}},
+    h('div',{style:{width:"64px",height:"64px",borderRadius:"20px",background:"linear-gradient(135deg,#0f9e6e,#0bc68e)",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 16px",color:"#fff",fontSize:"28px",fontWeight:"700"}},"S"),
+    h('h1',{style:{fontSize:"22px",fontWeight:"700",marginBottom:"6px"}},"Sog'liq kuzatuv"),
+    h('p',{style:{color:"var(--tx2)",fontSize:"14px"}},"Oilaviy tibbiy jurnal")
+  ));
+
+  const card = h('div',{style:{background:"var(--card)",borderRadius:"var(--rxl)",padding:"24px",border:"1px solid var(--br)"}});
+
+  card.append(h('h3',{style:{fontSize:"16px",fontWeight:"700",marginBottom:"16px"}},"GitHub'ga ulash"));
+  card.append(h('p',{style:{fontSize:"13px",color:"var(--tx2)",lineHeight:"1.6",marginBottom:"20px"}},"Barcha ma'lumotlar GitHub repo'da saqlanadi. Oila a'zolari havolani ochib birgalikda foydalanadi."));
+
+  // Steps
+  const steps = h('div',{style:{background:"var(--sec)",borderRadius:"var(--r)",padding:"14px 16px",marginBottom:"20px"}});
+  steps.append(h('div',{style:{fontSize:"13px",fontWeight:"600",marginBottom:"10px"}},"Birinchi qadamlar:"));
+  steps.append(h('div',{html:`<div style="font-size:13px;color:var(--tx2);line-height:1.8">
+    1. <a href="https://github.com/new" target="_blank" style="color:var(--ac);font-weight:600">github.com/new</a> → yangi <b>public</b> repo yarating<br>
+    2. <a href="https://github.com/settings/tokens/new?scopes=repo&description=Sogliq" target="_blank" style="color:var(--ac);font-weight:600">Token yarating</a> (repo huquqi bilan)<br>
+    3. Quyida ma'lumotlarni kiriting</div>`}));
+  card.append(steps);
+
+  const iOwner = makeInput("text","ali-uzb");
+  const iRepo = makeInput("text","sogliq"); iRepo.value = "sogliq";
+  const iToken = makeInput("password","ghp_xxxxxxxxxxxx");
+  const errDiv = h('div',{style:{display:"none",background:"var(--dnl)",color:"var(--dn)",padding:"10px 14px",borderRadius:"var(--r)",fontSize:"13px",fontWeight:"500",marginBottom:"14px"}});
+
+  card.append(field("GitHub username", iOwner, "Masalan: xurshid444"));
+  card.append(field("Repo nomi", iRepo, "Yangi yaratgan repo nomingiz"));
+  card.append(field("Personal Access Token", iToken, "Faqat brauzeringizda saqlanadi"));
+  card.append(errDiv);
+
+  card.append(btn("Ulash va boshlash", async()=>{
+    const o=iOwner.value.trim(), r=iRepo.value.trim(), t=iToken.value.trim();
+    if(!o||!r||!t){ errDiv.textContent="Barcha maydonlarni to'ldiring"; errDiv.style.display="block"; return; }
+    errDiv.style.display="none";
+    try {
+      const d = new GDB(o,r,t);
+      await d.test();
+      saveCfg({owner:o,repo:r,token:t,aiKey:""});
+      db = d;
+      loadData();
+    } catch(e){ errDiv.textContent=e.message; errDiv.style.display="block"; }
+  },{full:true}));
+
+  wrap.append(card);
+  app.append(wrap);
+}
+
+/* ═══ HEADER ═══ */
+function renderHeader(){
+  const hdr = h('div',{style:{background:"var(--card)",borderBottom:"1px solid var(--br)",padding:"10px 16px",position:"sticky",top:"0",zIndex:"100",display:"flex",alignItems:"center",justifyContent:"space-between"}});
+
+  const left = h('div',{style:{display:"flex",alignItems:"center",gap:"10px",cursor:"pointer"},onClick:()=>{currentView="home";render();}});
+  left.append(h('div',{style:{width:"32px",height:"32px",borderRadius:"9px",background:"linear-gradient(135deg,#0f9e6e,#0bc68e)",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:"15px",fontWeight:"700"}},"S"));
+  const info = h('div');
+  info.append(h('div',{style:{fontSize:"14px",fontWeight:"700",lineHeight:"1.2"}},"Sog'liq kuzatuv"));
+  const statusDot = saving ? "var(--wn)" : "var(--ac)";
+  const statusText = saving ? "SAQLANMOQDA..." : `GITHUB · ${cfg.owner}/${cfg.repo}`;
+  info.append(h('div',{html:`<span style="width:6px;height:6px;border-radius:50%;background:${statusDot};display:inline-block;margin-right:4px"></span><span style="font-size:9px;color:var(--tx3);font-weight:600;letter-spacing:0.5px">${statusText}</span>`}));
+  left.append(info);
+  hdr.append(left);
+
+  const right = h('div',{style:{display:"flex",gap:"5px"}});
+  const btnS = {border:"none",background:"var(--sec)",width:"32px",height:"32px",borderRadius:"50%",fontSize:"14px",cursor:"pointer",color:"var(--tx3)"};
+  right.append(h('button',{style:btnS,title:"Yangilash",onClick:async()=>{
+    D=null; render();
+    try{ const r=await db.read(); D=r?{...EMPTY,...r}:{...EMPTY}; toast("Yangilandi!"); } catch(e){ toast(e.message,"error"); D={...EMPTY}; }
+    render();
+  }},"↻"));
+  right.append(h('button',{style:btnS,title:"Sozlamalar",onClick:()=>showSettings()},"⚙"));
+  hdr.append(right);
+  return hdr;
+}
+
+/* ═══ HOME ═══ */
+function renderHome(el){
+  const abnormal = D.tests.filter(t=>{ const tt=getTest(t.tid); return tt&&tt.min!=null&&(t.value<tt.min||t.value>tt.max); }).length;
+
+  // Stats
+  const stats = h('div',{style:{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"8px",marginBottom:"20px"}});
+  [{n:D.members.length,l:"A'zolar",c:"var(--ac)",bg:"var(--acl)"},
+   {n:D.tests.length,l:"Tahlillar",c:"var(--inf)",bg:"var(--infl)"},
+   {n:abnormal,l:"Ogohlantirish",c:abnormal?"var(--dn)":"var(--tx3)",bg:abnormal?"var(--dnl)":"var(--sec)"}
+  ].forEach(s=>{
+    stats.append(h('div',{style:{background:s.bg,borderRadius:"var(--rxl)",padding:"12px 14px",textAlign:"center"}},
+      h('div',{style:{fontSize:"22px",fontWeight:"700",color:s.c}},String(s.n)),
+      h('div',{style:{fontSize:"10px",fontWeight:"600",color:s.c,opacity:"0.8"}},s.l)
+    ));
+  });
+  el.append(stats);
+
+  // Header row
+  const hr = h('div',{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"12px"}});
+  hr.append(h('h2',{style:{fontSize:"17px",fontWeight:"700"}},"Oila a'zolari"));
+  hr.append(btn("+ Qo'shish",()=>showAddMember(),{small:true}));
+  el.append(hr);
+
+  if(D.members.length===0){
+    el.append(h('div',{style:{textAlign:"center",padding:"40px 20px"}},
+      h('div',{style:{fontSize:"40px",marginBottom:"10px",opacity:"0.25"}},"👨‍👩‍👧‍👦"),
+      h('div',{style:{fontWeight:"600",fontSize:"15px",color:"var(--tx2)"}},"Hali a'zo yo'q")
+    ));
+    return;
+  }
+
+  D.members.forEach((m,idx)=>{
+    const tests = mTests(m.id);
+    const age = m.birthYear ? new Date().getFullYear() - m.birthYear : null;
+    const bad = tests.filter(t=>{const tt=getTest(t.tid);return tt&&tt.min!=null&&(t.value<tt.min||t.value>tt.max);}).length;
+    const c = COLORS[idx%COLORS.length];
+
+    const card = h('div',{style:{background:"var(--card)",border:"1px solid var(--br)",borderRadius:"var(--rxl)",padding:"12px 14px",cursor:"pointer",marginBottom:"8px",transition:"border-color 0.15s"},
+      onClick:()=>{selMember=m.id;currentView="member";selTab="tests";render();}
+    });
+    const row = h('div',{style:{display:"flex",alignItems:"center",gap:"12px"}});
+    row.append(h('div',{style:{width:"42px",height:"42px",borderRadius:"13px",flexShrink:"0",background:c+"18",color:c,display:"flex",alignItems:"center",justifyContent:"center",fontSize:"17px",fontWeight:"700"}},m.name.charAt(0).toUpperCase()));
+    const info = h('div',{style:{flex:"1",minWidth:"0"}});
+    info.append(h('div',{style:{fontWeight:"600",fontSize:"15px"}},m.name));
+    const meta = [age&&`${age} yosh`,m.gender,`${tests.length} tahlil`].filter(Boolean).join(" · ");
+    info.append(h('div',{style:{fontSize:"12px",color:"var(--tx2)",marginTop:"2px"}},meta));
+    row.append(info);
+    if(bad>0) row.append(h('span',{style:{background:"var(--dnl)",color:"var(--dn)",fontSize:"11px",fontWeight:"700",padding:"4px 10px",borderRadius:"20px"}},"⚠ "+bad));
+    row.append(h('span',{style:{color:"var(--tx3)",fontSize:"18px"}},"›"));
+    card.append(row);
+    el.append(card);
+  });
+
+  if(D.members.length>1){
+    el.append(h('div',{style:{marginTop:"16px",textAlign:"center"}},
+      btn("📊 Solishtirish",()=>{currentView="compare";render();},{outline:true})
+    ));
+  }
+}
+
+/* ═══ MEMBER ═══ */
+function renderMember(el){
+  const m = getMember(selMember);
+  if(!m){ currentView="home"; render(); return; }
+  const tests = mTests(m.id);
+  const visits = mVisits(m.id);
+  const age = m.birthYear ? new Date().getFullYear() - m.birthYear : null;
+  const idx = D.members.findIndex(x=>x.id===m.id);
+  const c = COLORS[idx%COLORS.length];
+
+  // Back
+  el.append(h('button',{style:{border:"none",background:"none",color:"var(--ac)",fontSize:"13px",fontWeight:"600",cursor:"pointer",marginBottom:"12px",padding:"0"},onClick:()=>{currentView="home";render();}},"← Orqaga"));
+
+  // Profile
+  const prof = h('div',{style:{background:c+"10",borderRadius:"var(--rxl)",padding:"16px",marginBottom:"16px",border:`1px solid ${c}25`}});
+  const profRow = h('div',{style:{display:"flex",alignItems:"center",gap:"12px",marginBottom:"12px"}});
+  profRow.append(h('div',{style:{width:"48px",height:"48px",borderRadius:"15px",background:c+"20",color:c,display:"flex",alignItems:"center",justifyContent:"center",fontSize:"20px",fontWeight:"700"}},m.name.charAt(0).toUpperCase()));
+  const pInfo = h('div');
+  pInfo.append(h('h2',{style:{fontSize:"19px",fontWeight:"700",marginBottom:"2px"}},m.name));
+  pInfo.append(h('div',{style:{fontSize:"13px",color:"var(--tx2)"}},[age&&`${age} yosh`,m.gender].filter(Boolean).join(" · ")));
+  profRow.append(pInfo);
+  prof.append(profRow);
+  const btns = h('div',{style:{display:"flex",gap:"8px",flexWrap:"wrap"}});
+  btns.append(btn("⚡ AI tahlil",()=>runAI(m.id),{small:true}));
+  btns.append(btn("O'chirish",()=>{
+    if(!confirm(m.name+" o'chirilsinmi?")) return;
+    D.members=D.members.filter(x=>x.id!==m.id);
+    D.tests=D.tests.filter(x=>x.mid!==m.id);
+    D.visits=D.visits.filter(x=>x.mid!==m.id);
+    saveData(); currentView="home"; render();
+  },{outline:true,small:true,danger:true}));
+  prof.append(btns);
+  el.append(prof);
+
+  // Tabs
+  const tabs = h('div',{style:{display:"flex",gap:"0",marginBottom:"16px",background:"var(--sec)",borderRadius:"var(--rxl)",padding:"3px"}});
+  [{key:"tests",label:`Tahlillar (${tests.length})`},{key:"visits",label:`Ko'riklar (${visits.length})`},{key:"chart",label:"Grafik"}].forEach(t=>{
+    const active = selTab===t.key;
+    tabs.append(h('button',{style:{flex:"1",border:"none",padding:"9px 8px",borderRadius:"12px",fontSize:"12px",fontWeight:"600",
+      background:active?"var(--card)":"transparent",color:active?"var(--tx)":"var(--tx2)",
+      boxShadow:active?"0 1px 2px rgba(0,0,0,0.04)":"none",cursor:"pointer"},
+      onClick:()=>{selTab=t.key;render();}
+    },t.label));
+  });
+  el.append(tabs);
+
+  if(selTab==="tests"){
+    el.append(h('div',{style:{display:"flex",justifyContent:"flex-end",marginBottom:"10px"}},
+      btn("+ Tahlil",()=>showAddTest(m.id),{small:true})
+    ));
+    if(tests.length===0){ el.append(h('div',{style:{textAlign:"center",padding:"30px",color:"var(--tx3)"}},"Hali tahlil yo'q")); return; }
+    tests.forEach(t=>{
+      const tt = getTest(t.tid);
+      const card = h('div',{style:{background:"var(--card)",border:"1px solid var(--br)",borderRadius:"var(--rl)",padding:"11px 14px",display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"8px"}});
+      const left = h('div',{style:{minWidth:"0"}});
+      left.append(h('div',{style:{fontWeight:"600",fontSize:"14px"}},tt?.name||"?"));
+      left.append(h('div',{style:{fontSize:"12px",color:"var(--tx3)",marginTop:"2px"}},fmtD(t.date)+(t.note?` · ${t.note}`:"")));
+      card.append(left);
+      const right = h('div',{style:{display:"flex",alignItems:"center",gap:"8px",flexShrink:"0"}});
+      right.append(h('span',{html:`<b style="font-size:15px">${t.value}</b> <span style="font-size:11px;color:var(--tx3)">${tt?.unit||""}</span>`}));
+      right.append(h('span',{html:badge(t.value,tt?.min,tt?.max)}));
+      right.append(h('button',{style:{border:"none",background:"none",color:"var(--tx3)",cursor:"pointer",fontSize:"16px",padding:"0 2px"},onClick:(e)=>{e.stopPropagation();D.tests=D.tests.filter(x=>x.id!==t.id);saveData();render();}},"×"));
+      card.append(right);
+      el.append(card);
+    });
+  }
+
+  if(selTab==="visits"){
+    el.append(h('div',{style:{display:"flex",justifyContent:"flex-end",marginBottom:"10px"}},
+      btn("+ Ko'rik",()=>showAddVisit(m.id),{small:true})
+    ));
+    if(visits.length===0){ el.append(h('div',{style:{textAlign:"center",padding:"30px",color:"var(--tx3)"}},"Hali ko'rik yo'q")); return; }
+    visits.forEach(v=>{
+      const dt = getDoc(v.did);
+      const card = h('div',{style:{background:"var(--card)",border:"1px solid var(--br)",borderRadius:"var(--rl)",padding:"11px 14px",marginBottom:"8px"}});
+      const top = h('div',{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}});
+      const li = h('div');
+      li.append(h('div',{style:{fontWeight:"600",fontSize:"14px"}},dt?.name||"?"));
+      li.append(h('div',{style:{fontSize:"12px",color:"var(--tx3)",marginTop:"2px"}},fmtD(v.date)));
+      top.append(li);
+      top.append(h('button',{style:{border:"none",background:"none",color:"var(--tx3)",cursor:"pointer",fontSize:"16px"},onClick:()=>{D.visits=D.visits.filter(x=>x.id!==v.id);saveData();render();}},"×"));
+      card.append(top);
+      if(v.diagnosis) card.append(h('div',{style:{marginTop:"8px",fontSize:"13px",fontWeight:"600",color:"var(--inf)"}},v.diagnosis));
+      if(v.notes) card.append(h('div',{style:{marginTop:"4px",fontSize:"13px",color:"var(--tx2)",lineHeight:"1.5"}},v.notes));
+      el.append(card);
+    });
+  }
+
+  if(selTab==="chart"){
+    const sel = makeSelect(D.testTypes.map(t=>[t.id,t.name]));
+    el.append(field("Tahlil turi",sel));
+    const canvasWrap = h('div',{style:{position:"relative",width:"100%",height:"260px",marginTop:"12px"}});
+    const canvas = h('canvas');
+    canvasWrap.append(canvas);
+    el.append(canvasWrap);
+
+    const drawChart = ()=>{
+      const tid = sel.value;
+      const tt = getTest(tid);
+      const results = tests.filter(t=>t.tid===tid).sort((a,b)=>new Date(a.date)-new Date(b.date));
+      if(chartInstance){ chartInstance.destroy(); chartInstance=null; }
+      if(results.length===0) return;
+      const isDark = window.matchMedia('(prefers-color-scheme:dark)').matches;
+      chartInstance = new Chart(canvas,{
+        type:'line',
+        data:{
+          labels: results.map(r=>fmtD(r.date)),
+          datasets:[{
+            label:tt?.name||"",
+            data: results.map(r=>r.value),
+            borderColor:'#0f9e6e',
+            backgroundColor:'rgba(15,158,110,0.1)',
+            borderWidth:2.5,
+            pointRadius:5,
+            pointBackgroundColor:'#0f9e6e',
+            tension:0.3,
+            fill:true
+          }]
+        },
+        options:{
+          responsive:true, maintainAspectRatio:false,
+          plugins:{
+            legend:{display:false},
+            annotation: undefined
+          },
+          scales:{
+            y:{
+              grid:{color:isDark?'rgba(255,255,255,0.06)':'rgba(0,0,0,0.06)'},
+              ticks:{color:isDark?'#9ca3b0':'#6b7080',font:{size:11}}
+            },
+            x:{
+              grid:{display:false},
+              ticks:{color:isDark?'#9ca3b0':'#6b7080',font:{size:10},maxRotation:45}
+            }
+          }
+        },
+        plugins:[{
+          id:'refLines',
+          afterDraw(chart){
+            if(!tt||tt.min==null) return;
+            const {ctx:cx,chartArea:{left,right},scales:{y}} = chart;
+            [tt.min,tt.max].forEach(val=>{
+              const yy = y.getPixelForValue(val);
+              cx.save();
+              cx.strokeStyle='#e8443a';
+              cx.setLineDash([5,5]);
+              cx.lineWidth=1;
+              cx.beginPath(); cx.moveTo(left,yy); cx.lineTo(right,yy); cx.stroke();
+              cx.fillStyle='#e8443a'; cx.font='10px sans-serif';
+              cx.fillText(val+" "+((tt?.unit)||""),left+4,yy-4);
+              cx.restore();
+            });
+          }
+        }]
+      });
+    };
+
+    sel.addEventListener('change',drawChart);
+    setTimeout(drawChart,50);
+  }
+}
+
+/* ═══ COMPARE ═══ */
+function renderCompare(el){
+  el.append(h('button',{style:{border:"none",background:"none",color:"var(--ac)",fontSize:"13px",fontWeight:"600",cursor:"pointer",marginBottom:"12px",padding:"0"},onClick:()=>{currentView="home";render();}},"← Orqaga"));
+  el.append(h('h2',{style:{fontSize:"17px",fontWeight:"700",marginBottom:"14px"}},"Oila solishtirish"));
+
+  const sel = makeSelect(D.testTypes.map(t=>[t.id,t.name]));
+  el.append(field("Tahlil turi",sel));
+
+  let selMembers = D.members.map(m=>m.id);
+  const pillsDiv = h('div',{style:{display:"flex",gap:"6px",flexWrap:"wrap",marginBottom:"14px"}});
+  const refreshPills = ()=>{
+    pillsDiv.innerHTML='';
+    D.members.forEach((m,i)=>{
+      const active = selMembers.includes(m.id);
+      const c = COLORS[i%COLORS.length];
+      pillsDiv.append(h('button',{style:{border:"none",borderRadius:"20px",padding:"6px 14px",fontSize:"12px",fontWeight:"600",background:active?c:"var(--sec)",color:active?"#fff":"var(--tx2)",cursor:"pointer"},
+        onClick:()=>{selMembers=active?selMembers.filter(x=>x!==m.id):[...selMembers,m.id]; refreshPills(); drawCmp();}
+      },m.name));
+    });
+  };
+  refreshPills();
+  el.append(pillsDiv);
+
+  const canvasWrap = h('div',{style:{position:"relative",width:"100%",height:"280px"}});
+  const canvas = h('canvas');
+  canvasWrap.append(canvas);
+  el.append(canvasWrap);
+
+  let cmpChart = null;
+  const drawCmp = ()=>{
+    const tid = sel.value;
+    const tt = getTest(tid);
+    const isDark = window.matchMedia('(prefers-color-scheme:dark)').matches;
+
+    const datasets = [];
+    const allDates = new Set();
+    selMembers.forEach(mid=>{
+      D.tests.filter(t=>t.tid===tid&&t.mid===mid).forEach(t=>allDates.add(t.date));
+    });
+    const dates = [...allDates].sort();
+
+    selMembers.forEach((mid,i)=>{
+      const m = getMember(mid);
+      if(!m) return;
+      const ci = D.members.findIndex(x=>x.id===mid);
+      const results = D.tests.filter(t=>t.tid===tid&&t.mid===mid);
+      datasets.push({
+        label:m.name,
+        data:dates.map(d=>{ const r=results.find(x=>x.date===d); return r?r.value:null; }),
+        borderColor:COLORS[ci%COLORS.length],
+        borderWidth:2,
+        pointRadius:4,
+        tension:0.3,
+        spanGaps:true
+      });
+    });
+
+    if(cmpChart) cmpChart.destroy();
+    cmpChart = new Chart(canvas,{
+      type:'line',
+      data:{ labels:dates.map(fmtD), datasets },
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{ legend:{labels:{color:isDark?'#9ca3b0':'#6b7080',font:{size:12}}} },
+        scales:{
+          y:{grid:{color:isDark?'rgba(255,255,255,0.06)':'rgba(0,0,0,0.06)'},ticks:{color:isDark?'#9ca3b0':'#6b7080',font:{size:11}}},
+          x:{grid:{display:false},ticks:{color:isDark?'#9ca3b0':'#6b7080',font:{size:10},maxRotation:45}}
+        }
+      },
+      plugins:[{
+        id:'refLines2',
+        afterDraw(chart){
+          if(!tt||tt.min==null) return;
+          const {ctx:cx,chartArea:{left,right},scales:{y}} = chart;
+          [tt.min,tt.max].forEach(val=>{
+            const yy=y.getPixelForValue(val); cx.save(); cx.strokeStyle='#e8443a'; cx.setLineDash([5,5]); cx.lineWidth=1;
+            cx.beginPath(); cx.moveTo(left,yy); cx.lineTo(right,yy); cx.stroke(); cx.restore();
+          });
+        }
+      }]
+    });
+  };
+
+  sel.addEventListener('change',drawCmp);
+  setTimeout(drawCmp,50);
+}
+
+/* ═══ AI ═══ */
+let aiResult = "";
+let aiLoading = false;
+
+async function runAI(mid){
+  if(!cfg.aiKey){ showAIKey(); return; }
+  const m = getMember(mid); if(!m) return;
+  aiLoading=true; aiResult=""; currentView="ai"; render();
+
+  const tests = mTests(mid);
+  const visits = mVisits(mid);
+  const tSum = tests.map(t=>{const tt=getTest(t.tid);return `${fmtD(t.date)}: ${tt?.name||"?"} = ${t.value} ${tt?.unit||""} (norma: ${tt?.min}-${tt?.max})`;}).join("\n");
+  const vSum = visits.map(v=>{const dt=getDoc(v.did);return `${fmtD(v.date)}: ${dt?.name||"?"} — ${v.diagnosis||""}. ${v.notes||""}`;}).join("\n");
+  const age = m.birthYear?(new Date().getFullYear()-m.birthYear):null;
+
+  try{
+    const res = await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","x-api-key":cfg.aiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+      body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1500,
+        messages:[{role:"user",content:`Sen tajribali oilaviy shifokor yordamchisisan. O'zbek tilida tahlil qil:
+Bemor: ${m.name}, ${age?age+" yosh":"yoshi noma'lum"}, ${m.gender||""}
+TAHLILLAR:\n${tSum||"(yo'q)"}
+KO'RIKLAR:\n${vSum||"(yo'q)"}
+1. 📊 UMUMIY XULOSA  2. ⚠️ OGOHLANTIRISH  3. 📅 TAVSIYALAR  4. 💊 SOGLOM TURMUSH  5. 🔔 ESLATMA
+Oxirida: "Bu AI umumiy ma'lumot, shifokor maslahatini almashtirmaydi."`}]
+      })
+    });
+    const d = await res.json();
+    if(d.error) throw new Error(d.error.message);
+    aiResult = d.content?.map(c=>c.text||"").join("\n")||"Natija olinmadi";
+  }catch(e){ aiResult="Xatolik: "+e.message; }
+  aiLoading=false; render();
+}
+
+function renderAI(el){
+  el.append(h('button',{style:{border:"none",background:"none",color:"var(--ac)",fontSize:"13px",fontWeight:"600",cursor:"pointer",marginBottom:"12px",padding:"0"},onClick:()=>{currentView="member";render();}},"← Orqaga"));
+  el.append(h('h2',{style:{fontSize:"17px",fontWeight:"700",marginBottom:"14px"}},"⚡ AI tahlili"));
+  el.append(h('div',{style:{background:"var(--infl)",borderRadius:"var(--r)",padding:"9px 12px",fontSize:"12px",color:"var(--inf)",marginBottom:"14px",fontWeight:"500"}},"Bu AI tomonidan berilgan umumiy ma'lumot. Shifokor maslahatini almashtirmaydi."));
+  if(aiLoading){ el.append(spinner("Tahlil qilinmoqda...")); return; }
+  el.append(h('div',{style:{background:"var(--card)",border:"1px solid var(--br)",borderRadius:"var(--rl)",padding:"16px 18px",fontSize:"14px",lineHeight:"1.8",whiteSpace:"pre-wrap"}},aiResult||"Natija yo'q"));
+}
+
+/* ═══ MODALS ═══ */
+function showAddMember(){
+  showModal("Yangi oila a'zosi",(modal,close)=>{
+    const iName=makeInput("text","Ahmad");
+    const iYear=makeInput("number","1990");
+    let gender="";
+    const gDiv=h('div',{style:{display:"flex",gap:"8px"}});
+    const refreshG=()=>{ gDiv.innerHTML=''; ["Erkak","Ayol"].forEach(g=>{
+      gDiv.append(h('button',{style:{border:"none",borderRadius:"20px",padding:"6px 14px",fontSize:"12px",fontWeight:"600",background:gender===g?"var(--ac)":"var(--sec)",color:gender===g?"#fff":"var(--tx2)",cursor:"pointer"},onClick:()=>{gender=g;refreshG();}},g));
+    });};
+    refreshG();
+    modal.append(field("Ismi",iName));
+    modal.append(field("Tug'ilgan yili",iYear));
+    modal.append(field("Jinsi",gDiv));
+    modal.append(btn("Qo'shish",()=>{
+      if(!iName.value.trim()) return;
+      D.members.push({id:uid(),name:iName.value.trim(),birthYear:parseInt(iYear.value)||null,gender});
+      saveData(); close(); render();
+    },{full:true}));
+  });
+}
+
+function showAddTest(mid){
+  showModal("Tahlil natijasi",(modal,close)=>{
+    const sel=makeSelect(D.testTypes.map(t=>[t.id,`${t.name} (${t.unit})`]));
+    const iVal=makeInput("number","5.4");
+    const iDate=makeInput("date"); iDate.value=new Date().toISOString().split("T")[0];
+    const iNote=makeInput("text","Ixtiyoriy");
+    modal.append(field("Tahlil turi",sel));
+    modal.append(field("Natija",iVal));
+    modal.append(field("Sana",iDate));
+    modal.append(field("Izoh",iNote));
+    modal.append(btn("Saqlash",()=>{
+      if(!iVal.value) return;
+      D.tests.push({id:uid(),mid,tid:sel.value,value:parseFloat(iVal.value),date:iDate.value,note:iNote.value});
+      saveData(); close(); render();
+    },{full:true}));
+  });
+}
+
+function showAddVisit(mid){
+  showModal("Shifokor ko'rigi",(modal,close)=>{
+    const sel=makeSelect(D.doctorTypes.map(d=>[d.id,d.name]));
+    const iDate=makeInput("date"); iDate.value=new Date().toISOString().split("T")[0];
+    const iDiag=makeInput("text","Masalan: Sog'lom");
+    const iNotes=h('textarea',{className:'inp',placeholder:"Shifokor tavsiyalari..."});
+    modal.append(field("Shifokor turi",sel));
+    modal.append(field("Sana",iDate));
+    modal.append(field("Tashxis",iDiag));
+    modal.append(field("Tavsiya",iNotes));
+    modal.append(btn("Saqlash",()=>{
+      D.visits.push({id:uid(),mid,did:sel.value,date:iDate.value,diagnosis:iDiag.value,notes:iNotes.value});
+      saveData(); close(); render();
+    },{full:true}));
+  });
+}
+
+function showSettings(){
+  showModal("Sozlamalar",(modal,close)=>{
+    // Test types
+    modal.append(h('div',{style:{fontSize:"14px",fontWeight:"600",marginBottom:"8px"}},"Tahlil turlari"));
+    const ttDiv=h('div',{style:{display:"flex",flexWrap:"wrap",gap:"6px",marginBottom:"8px"}});
+    D.testTypes.forEach(t=>{
+      const chip=h('span',{style:{fontSize:"12px",background:"var(--sec)",padding:"5px 10px",borderRadius:"20px",display:"flex",alignItems:"center",gap:"6px"}},t.name);
+      chip.append(h('button',{style:{border:"none",background:"none",cursor:"pointer",color:"var(--tx3)",fontSize:"14px"},onClick:()=>{D.testTypes=D.testTypes.filter(x=>x.id!==t.id);saveData();close();showSettings();}},"×"));
+      ttDiv.append(chip);
+    });
+    modal.append(ttDiv);
+    modal.append(h('div',{style:{marginBottom:"16px"}},btn("+ Tahlil turi",()=>{close();showAddTestType();},{outline:true,small:true})));
+
+    // Doc types
+    modal.append(h('div',{style:{fontSize:"14px",fontWeight:"600",marginBottom:"8px"}},"Shifokor turlari"));
+    const dtDiv=h('div',{style:{display:"flex",flexWrap:"wrap",gap:"6px",marginBottom:"8px"}});
+    D.doctorTypes.forEach(d=>{
+      const chip=h('span',{style:{fontSize:"12px",background:"var(--sec)",padding:"5px 10px",borderRadius:"20px",display:"flex",alignItems:"center",gap:"6px"}},d.name);
+      chip.append(h('button',{style:{border:"none",background:"none",cursor:"pointer",color:"var(--tx3)",fontSize:"14px"},onClick:()=>{D.doctorTypes=D.doctorTypes.filter(x=>x.id!==d.id);saveData();close();showSettings();}},"×"));
+      dtDiv.append(chip);
+    });
+    modal.append(dtDiv);
+    modal.append(h('div',{style:{marginBottom:"16px"}},btn("+ Shifokor turi",()=>{close();showAddDocType();},{outline:true,small:true})));
+
+    // Actions
+    const acts=h('div',{style:{borderTop:"1px solid var(--br)",paddingTop:"14px",display:"flex",gap:"8px",flexWrap:"wrap"}});
+    acts.append(btn("⚡ AI sozlama",()=>{close();showAIKey();},{outline:true,small:true}));
+    acts.append(btn("Chiqish",()=>{
+      localStorage.removeItem(CONF_KEY); cfg=null; db=null; D=null; close(); render();
+    },{outline:true,small:true,danger:true}));
+    modal.append(acts);
+  });
+}
+
+function showAddTestType(){
+  showModal("Yangi tahlil turi",(modal,close)=>{
+    const iName=makeInput("text","Eritrotsitlar");
+    const iUnit=makeInput("text","10¹²/l");
+    const iMin=makeInput("number",""); iMin.setAttribute("step","any");
+    const iMax=makeInput("number",""); iMax.setAttribute("step","any");
+    modal.append(field("Nomi",iName));
+    modal.append(field("O'lchov birligi",iUnit));
+    const row=h('div',{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"10px"}});
+    row.append(field("Normal min",iMin));
+    row.append(field("Normal max",iMax));
+    modal.append(row);
+    modal.append(btn("Qo'shish",()=>{
+      if(!iName.value.trim()) return;
+      D.testTypes.push({id:uid(),name:iName.value.trim(),unit:iUnit.value,min:parseFloat(iMin.value)||null,max:parseFloat(iMax.value)||null});
+      saveData(); close(); render();
+    },{full:true}));
+  });
+}
+
+function showAddDocType(){
+  showModal("Yangi shifokor turi",(modal,close)=>{
+    const iName=makeInput("text","Otorinolaringolog");
+    modal.append(field("Nomi",iName));
+    modal.append(btn("Qo'shish",()=>{
+      if(!iName.value.trim()) return;
+      D.doctorTypes.push({id:uid(),name:iName.value.trim()});
+      saveData(); close(); render();
+    },{full:true}));
+  });
+}
+
+function showAIKey(){
+  showModal("⚡ AI sozlama",(modal,close)=>{
+    modal.append(h('div',{html:`<div style="font-size:13px;color:var(--tx2);line-height:1.6;margin-bottom:14px">AI tahlil uchun Anthropic API kaliti kerak. <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color:var(--ac);font-weight:600">console.anthropic.com</a> dan oling.</div>`}));
+    const iKey=makeInput("password","sk-ant-api03-..."); iKey.value=cfg.aiKey||"";
+    modal.append(field("API kaliti",iKey));
+    modal.append(btn("Saqlash",()=>{
+      saveCfg({...cfg,aiKey:iKey.value});
+      toast("AI sozlandi!"); close();
+    },{full:true}));
+  });
+}
+
+/* ═══ INIT ═══ */
+cfg = loadCfg();
+if(cfg){
+  db = new GDB(cfg.owner, cfg.repo, cfg.token);
+  loadData();
+} else {
+  render();
+}
+</script>
+</body>
+</html>
