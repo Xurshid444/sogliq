@@ -1,0 +1,75 @@
+{
+  "members": [],
+  "testTypes": [
+    {
+      "id": "t1",
+      "name": "Qondagi qand (Glukoza)",
+      "unit": "mmol/l",
+      "min": 3.9,
+      "max": 6.1
+    },
+    {
+      "id": "t2",
+      "name": "Gemoglobin",
+      "unit": "g/l",
+      "min": 120,
+      "max": 160
+    },
+    {
+      "id": "t3",
+      "name": "Umumiy xolesterin",
+      "unit": "mmol/l",
+      "min": 3.6,
+      "max": 5.2
+    },
+    {
+      "id": "t4",
+      "name": "Leykotsitlar (WBC)",
+      "unit": "10⁹/l",
+      "min": 4,
+      "max": 9
+    },
+    {
+      "id": "t5",
+      "name": "Eritrotsitlar (RBC)",
+      "unit": "10¹²/l",
+      "min": 3.8,
+      "max": 5.8
+    },
+    {
+      "id": "t6",
+      "name": "Trombotsitlar",
+      "unit": "10⁹/l",
+      "min": 150,
+      "max": 400
+    }
+  ],
+  "doctorTypes": [
+    {
+      "id": "d1",
+      "name": "Terapevt"
+    },
+    {
+      "id": "d2",
+      "name": "Kardiolog"
+    },
+    {
+      "id": "d3",
+      "name": "Endokrinolog"
+    },
+    {
+      "id": "d4",
+      "name": "Nevropatolog"
+    },
+    {
+      "id": "d5",
+      "name": "Lor"
+    },
+    {
+      "id": "d6",
+      "name": "Ginekolog"
+    }
+  ],
+  "tests": [],
+  "visits": []
+}
