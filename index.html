@@ -17,7 +17,7 @@
   --text: #1a1d23; --text-secondary: #6b7080; --text-hint: #9ca3b0;
   --border: #e2e4ea; --border-hover: #c8cbd4;
   --accent: #0f9e6e; --accent-light: #e8f7f1; --accent-dark: #0a7a55;
-  --danger: #e8443a; --danger-light: #fef0ef; --danger-dark: #c23a31;
+  --danger: #e8443a; --danger-light: #fef0ef;
   --warn: #e5960b; --warn-light: #fef7e8;
   --info: #2f7bdf; --info-light: #edf4fd;
   --radius: 10px; --radius-lg: 14px; --radius-xl: 18px;
@@ -40,10 +40,9 @@
 }
 body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; }
 input, select, textarea, button { font-family: var(--font); }
-input[type="text"], input[type="number"], input[type="date"], select, textarea {
+input[type="text"], input[type="number"], input[type="date"], input[type="password"], select, textarea {
   width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: var(--radius);
-  background: var(--bg-card); color: var(--text); font-size: 14px; transition: border-color 0.15s;
-  outline: none;
+  background: var(--bg-card); color: var(--text); font-size: 14px; transition: border-color 0.15s; outline: none;
 }
 input:focus, select:focus, textarea:focus { border-color: var(--accent); }
 textarea { resize: vertical; min-height: 70px; }
@@ -52,7 +51,6 @@ button { cursor: pointer; }
 .fade-in { animation: fadeIn 0.25s ease; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes spin { to { transform: rotate(360deg); } }
-@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
 .recharts-cartesian-grid line { stroke: var(--border) !important; }
 .recharts-text { fill: var(--text-secondary) !important; font-size: 11px !important; }
 .recharts-tooltip-wrapper .recharts-default-tooltip {
@@ -60,18 +58,23 @@ button { cursor: pointer; }
   border-radius: var(--radius) !important; box-shadow: var(--shadow-lg) !important;
 }
 .recharts-legend-item-text { color: var(--text-secondary) !important; font-size: 12px !important; }
+.toast {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+  padding: 10px 20px; border-radius: 30px; font-size: 13px; font-weight: 600;
+  z-index: 2000; animation: fadeIn 0.3s ease; box-shadow: var(--shadow-lg);
+}
 </style>
 </head>
 <body>
 <div id="root"></div>
 <script type="text/babel">
 const { useState, useEffect, useCallback, useRef } = React;
-const { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, Area, AreaChart, ComposedChart } = Recharts;
+const { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, ComposedChart } = Recharts;
 
-const STORAGE_KEY = "sogliq_kuzatuv_v2";
+const LOCAL_CONFIG_KEY = "sogliq_config_v3";
 const COLORS = ["#0f9e6e","#2f7bdf","#e8443a","#9b59b6","#e5960b","#e84393","#00b894","#6c5ce7","#fd7e40"];
 
-const DEFAULT = {
+const EMPTY_DATA = {
   members: [],
   testTypes: [
     { id: "t1", name: "Qondagi qand (Glukoza)", unit: "mmol/l", normalMin: 3.9, normalMax: 6.1 },
@@ -91,26 +94,92 @@ const DEFAULT = {
   ],
   testResults: [],
   doctorVisits: [],
-  aiKey: "",
 };
 
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+function fmtDate(d) { if (!d) return ""; return new Date(d).toLocaleDateString("uz-UZ",{year:"numeric",month:"short",day:"numeric"}); }
 
-function fmtDate(d) {
-  if (!d) return "";
-  return new Date(d).toLocaleDateString("uz-UZ", { year: "numeric", month: "short", day: "numeric" });
+/* ═══════════════════════════════════════
+   GitHub API — repo o'zi database bo'ladi
+   ═══════════════════════════════════════ */
+
+class GitHubDB {
+  constructor(owner, repo, token, path = "data.json") {
+    this.owner = owner;
+    this.repo = repo;
+    this.token = token;
+    this.path = path;
+    this.sha = null;
+  }
+
+  get headers() {
+    return {
+      "Authorization": `Bearer ${this.token}`,
+      "Accept": "application/vnd.github.v3+json",
+      "Content-Type": "application/json",
+    };
+  }
+
+  get url() {
+    return `https://api.github.com/repos/${this.owner}/${this.repo}/contents/${this.path}`;
+  }
+
+  async read() {
+    try {
+      const res = await fetch(this.url, { headers: this.headers });
+      if (res.status === 404) {
+        this.sha = null;
+        return null;
+      }
+      if (!res.ok) throw new Error(`GitHub: ${res.status}`);
+      const json = await res.json();
+      this.sha = json.sha;
+      const decoded = atob(json.content.replace(/\n/g, ""));
+      const text = new TextDecoder().decode(Uint8Array.from(decoded, c => c.charCodeAt(0)));
+      return JSON.parse(text);
+    } catch (e) {
+      console.error("GitHub read error:", e);
+      throw e;
+    }
+  }
+
+  async write(data) {
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
+    const body = {
+      message: `Sog'liq ma'lumotlari yangilandi — ${new Date().toLocaleString("uz-UZ")}`,
+      content: content,
+    };
+    if (this.sha) body.sha = this.sha;
+
+    const res = await fetch(this.url, {
+      method: "PUT",
+      headers: this.headers,
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      if (res.status === 409) {
+        // Conflict — re-read and retry
+        await this.read();
+        return this.write(data);
+      }
+      throw new Error(err.message || `GitHub: ${res.status}`);
+    }
+    const json = await res.json();
+    this.sha = json.content.sha;
+    return true;
+  }
+
+  async test() {
+    const res = await fetch(`https://api.github.com/repos/${this.owner}/${this.repo}`, { headers: this.headers });
+    if (!res.ok) throw new Error(res.status === 404 ? "Repo topilmadi" : res.status === 401 ? "Token noto'g'ri" : `Xatolik: ${res.status}`);
+    const repo = await res.json();
+    if (!repo.permissions?.push) throw new Error("Token'ga yozish huquqi yo'q");
+    return true;
+  }
 }
 
-function loadData() {
-  try { const d = localStorage.getItem(STORAGE_KEY); return d ? { ...DEFAULT, ...JSON.parse(d) } : DEFAULT; }
-  catch { return DEFAULT; }
-}
-
-function saveData(d) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); } catch(e) { console.error(e); }
-}
-
-/* ─── Tiny Components ─── */
+/* ═══ Tiny UI Components ═══ */
 
 function Badge({ value, min, max }) {
   if (min == null || max == null || value == null) return null;
@@ -131,8 +200,7 @@ function Pill({ active, color, children, onClick }) {
     <button onClick={onClick} style={{
       border: "none", borderRadius: 20, padding: "6px 14px", fontSize: 12, fontWeight: 600,
       background: active ? (color || "var(--accent)") : "var(--bg-secondary)",
-      color: active ? "#fff" : "var(--text-secondary)", cursor: "pointer",
-      transition: "all 0.15s"
+      color: active ? "#fff" : "var(--text-secondary)", cursor: "pointer", transition: "all 0.15s"
     }}>{children}</button>
   );
 }
@@ -147,15 +215,15 @@ function EmptyState({ icon, title, sub }) {
   );
 }
 
-function Modal({ title, onClose, children }) {
+function Modal({ title, onClose, children, wide }) {
   return (
     <div onClick={onClose} style={{
       position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", display: "flex",
       alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 16, backdropFilter: "blur(4px)"
     }}>
       <div onClick={e => e.stopPropagation()} className="fade-in" style={{
-        background: "var(--bg-card)", borderRadius: var_radius_xl, padding: 24,
-        width: "100%", maxWidth: 420, maxHeight: "85vh", overflow: "auto",
+        background: "var(--bg-card)", borderRadius: "var(--radius-xl)", padding: 24,
+        width: "100%", maxWidth: wide ? 500 : 420, maxHeight: "85vh", overflow: "auto",
         boxShadow: "var(--shadow-lg)", border: "1px solid var(--border)"
       }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
@@ -171,44 +239,66 @@ function Modal({ title, onClose, children }) {
     </div>
   );
 }
-const var_radius_xl = "var(--radius-xl)";
 
-function Field({ label, children }) {
+function Field({ label, children, hint }) {
   return (
     <div style={{ marginBottom: 16 }}>
       <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "var(--text-secondary)", marginBottom: 6 }}>{label}</label>
       {children}
+      {hint && <div style={{ fontSize: 11, color: "var(--text-hint)", marginTop: 4 }}>{hint}</div>}
     </div>
   );
 }
 
-function PrimaryBtn({ children, onClick, disabled, danger, full }) {
+function Btn({ children, onClick, disabled, danger, full, outline, small }) {
+  if (outline) return (
+    <button onClick={onClick} disabled={disabled} style={{
+      padding: small ? "6px 12px" : "8px 16px", border: `1.5px solid ${danger ? "var(--danger)" : "var(--border)"}`,
+      borderRadius: "var(--radius-xl)", fontSize: small ? 12 : 13, fontWeight: 600,
+      background: "transparent", color: danger ? "var(--danger)" : "var(--text)",
+      cursor: disabled ? "default" : "pointer", opacity: disabled ? 0.5 : 1, transition: "all 0.15s"
+    }}>{children}</button>
+  );
   return (
     <button onClick={onClick} disabled={disabled} style={{
-      width: full ? "100%" : "auto", padding: "10px 20px", border: "none",
-      borderRadius: var_radius_xl, fontSize: 14, fontWeight: 600,
-      background: danger ? "var(--danger)" : "var(--accent)",
-      color: "#fff", opacity: disabled ? 0.5 : 1,
-      cursor: disabled ? "default" : "pointer", transition: "transform 0.1s",
+      width: full ? "100%" : "auto", padding: small ? "7px 14px" : "10px 20px", border: "none",
+      borderRadius: "var(--radius-xl)", fontSize: 14, fontWeight: 600,
+      background: danger ? "var(--danger)" : "var(--accent)", color: "#fff",
+      opacity: disabled ? 0.5 : 1, cursor: disabled ? "default" : "pointer", transition: "transform 0.1s",
     }}>{children}</button>
   );
 }
 
-function OutlineBtn({ children, onClick, danger, small }) {
+function Toast({ message, type }) {
+  if (!message) return null;
+  const bg = type === "error" ? "var(--danger)" : type === "warn" ? "var(--warn)" : "var(--accent)";
+  return <div className="toast" style={{ background: bg, color: "#fff" }}>{message}</div>;
+}
+
+function Spinner({ text }) {
   return (
-    <button onClick={onClick} style={{
-      padding: small ? "6px 12px" : "8px 16px", border: `1.5px solid ${danger ? "var(--danger)" : "var(--border)"}`,
-      borderRadius: var_radius_xl, fontSize: small ? 12 : 13, fontWeight: 600,
-      background: "transparent", color: danger ? "var(--danger)" : "var(--text)",
-      cursor: "pointer", transition: "all 0.15s"
-    }}>{children}</button>
+    <div style={{ textAlign: "center", padding: 40 }}>
+      <div style={{ width: 36, height: 36, border: "3px solid var(--border)", borderTopColor: "var(--accent)", borderRadius: "50%", animation: "spin 0.7s linear infinite", margin: "0 auto 12px" }} />
+      <div style={{ color: "var(--text-secondary)", fontSize: 14 }}>{text || "Yuklanmoqda..."}</div>
+    </div>
   );
 }
 
-/* ─── Main App ─── */
+/* ═══════════════════════
+   MAIN APP
+   ═══════════════════════ */
 
 function App() {
-  const [data, setData] = useState(loadData);
+  // Config: GitHub credentials (stored in localStorage)
+  const [config, setConfig] = useState(() => {
+    try { const c = localStorage.getItem(LOCAL_CONFIG_KEY); return c ? JSON.parse(c) : null; } catch { return null; }
+  });
+
+  // Main data (stored in GitHub)
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [toast, setToast] = useState(null);
   const [view, setView] = useState("home");
   const [selMember, setSelMember] = useState(null);
   const [modal, setModal] = useState(null);
@@ -216,50 +306,110 @@ function App() {
   const [cmpType, setCmpType] = useState("");
   const [aiResult, setAiResult] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
+  const [lastSync, setLastSync] = useState(null);
+  const dbRef = useRef(null);
 
-  const save = (d) => { setData(d); saveData(d); };
-  const member = (id) => data.members.find(m => m.id === id);
-  const testType = (id) => data.testTypes.find(t => t.id === id);
-  const docType = (id) => data.doctorTypes.find(d => d.id === id);
-  const mTests = (mid) => data.testResults.filter(r => r.memberId === mid).sort((a,b) => new Date(b.date) - new Date(a.date));
-  const mVisits = (mid) => data.doctorVisits.filter(v => v.memberId === mid).sort((a,b) => new Date(b.date) - new Date(a.date));
+  const showToast = (msg, type = "ok") => {
+    setToast({ message: msg, type });
+    setTimeout(() => setToast(null), 3000);
+  };
 
+  // Initialize GitHub DB
+  useEffect(() => {
+    if (!config) { setLoading(false); return; }
+    const db = new GitHubDB(config.owner, config.repo, config.token);
+    dbRef.current = db;
+    loadFromGitHub(db);
+  }, [config]);
+
+  const loadFromGitHub = async (db) => {
+    setLoading(true);
+    try {
+      const result = await db.read();
+      if (result) {
+        setData({ ...EMPTY_DATA, ...result });
+      } else {
+        // First time — create data.json
+        await db.write(EMPTY_DATA);
+        setData(EMPTY_DATA);
+      }
+      setLastSync(new Date());
+    } catch (e) {
+      showToast("GitHub'dan o'qishda xatolik: " + e.message, "error");
+      setData(EMPTY_DATA);
+    }
+    setLoading(false);
+  };
+
+  const saveToGitHub = async (newData) => {
+    setData(newData);
+    if (!dbRef.current) return;
+    setSaving(true);
+    try {
+      await dbRef.current.write(newData);
+      setLastSync(new Date());
+    } catch (e) {
+      showToast("Saqlashda xatolik: " + e.message, "error");
+    }
+    setSaving(false);
+  };
+
+  const refresh = async () => {
+    if (!dbRef.current) return;
+    setLoading(true);
+    try {
+      const result = await dbRef.current.read();
+      if (result) setData({ ...EMPTY_DATA, ...result });
+      setLastSync(new Date());
+      showToast("Yangilandi!");
+    } catch (e) {
+      showToast("Xatolik: " + e.message, "error");
+    }
+    setLoading(false);
+  };
+
+  const saveConfig = (c) => {
+    localStorage.setItem(LOCAL_CONFIG_KEY, JSON.stringify(c));
+    setConfig(c);
+  };
+
+  const logout = () => {
+    localStorage.removeItem(LOCAL_CONFIG_KEY);
+    setConfig(null);
+    setData(null);
+    dbRef.current = null;
+    setView("home");
+  };
+
+  // Helper accessors
+  const member = (id) => data?.members.find(m => m.id === id);
+  const testType = (id) => data?.testTypes.find(t => t.id === id);
+  const docType = (id) => data?.doctorTypes.find(d => d.id === id);
+  const mTests = (mid) => (data?.testResults || []).filter(r => r.memberId === mid).sort((a,b) => new Date(b.date) - new Date(a.date));
+  const mVisits = (mid) => (data?.doctorVisits || []).filter(v => v.memberId === mid).sort((a,b) => new Date(b.date) - new Date(a.date));
   const goMember = (id) => { setSelMember(id); setView("member"); setTab("tests"); };
 
-  /* ─── AI ─── */
+  /* ═══ AI ═══ */
   const runAI = async (mid) => {
-    if (!data.aiKey) { setModal("aikey"); return; }
+    if (!config?.aiKey) { setModal("aikey"); return; }
     const m = member(mid);
     if (!m) return;
     setAiLoading(true); setAiResult(""); setView("ai");
     const tests = mTests(mid);
     const visits = mVisits(mid);
-    const tSum = tests.map(t => {
-      const tt = testType(t.testTypeId);
-      return `${fmtDate(t.date)}: ${tt?.name||"?"} = ${t.value} ${tt?.unit||""} (norma: ${tt?.normalMin}-${tt?.normalMax})`;
-    }).join("\n");
-    const vSum = visits.map(v => {
-      const dt = docType(v.doctorTypeId);
-      return `${fmtDate(v.date)}: ${dt?.name||"?"} — ${v.diagnosis||""}. Tavsiya: ${v.notes||""}`;
-    }).join("\n");
-
+    const tSum = tests.map(t => { const tt = testType(t.testTypeId); return `${fmtDate(t.date)}: ${tt?.name||"?"} = ${t.value} ${tt?.unit||""} (norma: ${tt?.normalMin}-${tt?.normalMax})`; }).join("\n");
+    const vSum = visits.map(v => { const dt = docType(v.doctorTypeId); return `${fmtDate(v.date)}: ${dt?.name||"?"} — ${v.diagnosis||""}. Tavsiya: ${v.notes||""}`; }).join("\n");
     const age = m.birthYear ? (new Date().getFullYear() - m.birthYear) : null;
 
     try {
       const res = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": data.aiKey,
-          "anthropic-version": "2023-06-01",
-          "anthropic-dangerous-direct-browser-access": "true"
-        },
+        headers: { "Content-Type": "application/json", "x-api-key": config.aiKey, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
         body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1500,
+          model: "claude-sonnet-4-20250514", max_tokens: 1500,
           messages: [{ role: "user", content: `Sen tajribali oilaviy shifokor yordamchisisan. Quyidagi ma'lumotlarni tahlil qilib, o'zbek tilida batafsil xulosa ber:
 
-Bemor: ${m.name}, ${age ? age + " yosh" : "yoshi noma'lum"}, ${m.gender || "jinsi ko'rsatilmagan"}
+Bemor: ${m.name}, ${age ? age+" yosh" : "yoshi noma'lum"}, ${m.gender || ""}
 
 LABORATORIYA TAHLILLARI:
 ${tSum || "(hali kiritilmagan)"}
@@ -267,29 +417,26 @@ ${tSum || "(hali kiritilmagan)"}
 SHIFOKOR KO'RIKLARI:
 ${vSum || "(hali kiritilmagan)"}
 
-Iltimos quyidagilarni yoz:
-1. 📊 UMUMIY XULOSA — sog'liq holati haqida qisqa baho
-2. ⚠️ OGOHLANTIRISH — normadan chetga chiqqan ko'rsatkichlar va ularning ma'nosi
-3. 📅 TAVSIYALAR — keyingi qanday tahlillar topshirish kerak, qachon
-4. 💊 SOGLOM TURMUSH TARZI — ovqatlanish, harakat, uyqu bo'yicha maslahatlar
+Iltimos:
+1. 📊 UMUMIY XULOSA
+2. ⚠️ OGOHLANTIRISH — normadan chetga chiqqan ko'rsatkichlar
+3. 📅 TAVSIYALAR — keyingi tahlillar va muddatlari
+4. 💊 SOGLOM TURMUSH TARZI bo'yicha maslahatlar
 5. 🔔 ESLATMA — qachon shifokorga murojaat qilish kerak
 
-⚠️ Oxirida eslatma yoz: "Bu AI tomonidan berilgan umumiy ma'lumot bo'lib, shifokor maslahatini almashtirmaydi."` }]
+Oxirida: "Bu AI tomonidan berilgan umumiy ma'lumot, shifokor maslahatini almashtirmaydi."` }]
         })
       });
       const d = await res.json();
       if (d.error) throw new Error(d.error.message);
       setAiResult(d.content?.map(c => c.text||"").join("\n") || "Natija olinmadi");
-    } catch(e) {
-      setAiResult("❌ Xatolik: " + e.message);
-    }
+    } catch(e) { setAiResult("Xatolik: " + e.message); }
     setAiLoading(false);
   };
 
-  /* ─── Delete helpers ─── */
   const delMember = (id) => {
     if (!confirm("Bu a'zo va barcha ma'lumotlari o'chiriladi. Davom etasizmi?")) return;
-    save({
+    saveToGitHub({
       ...data,
       members: data.members.filter(m => m.id !== id),
       testResults: data.testResults.filter(r => r.memberId !== id),
@@ -298,97 +445,103 @@ Iltimos quyidagilarni yoz:
     setView("home");
   };
 
-  /* ─── HEADER ─── */
+  /* ═══════════════════
+     SETUP SCREEN
+     ═══════════════════ */
+  if (!config) {
+    return <SetupScreen onSave={saveConfig} />;
+  }
+
+  if (loading) {
+    return (
+      <div style={{ maxWidth: 480, margin: "0 auto", minHeight: "100vh", background: "var(--bg)" }}>
+        <Spinner text="GitHub'dan yuklanmoqda..." />
+      </div>
+    );
+  }
+
+  if (!data) return null;
+
+  /* ═══ Header ═══ */
   const Header = () => (
     <div style={{
       background: "var(--bg-card)", borderBottom: "1px solid var(--border)",
-      padding: "12px 20px", position: "sticky", top: 0, zIndex: 100,
+      padding: "10px 16px", position: "sticky", top: 0, zIndex: 100,
       display: "flex", alignItems: "center", justifyContent: "space-between",
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }} onClick={() => setView("home")}>
         <div style={{
-          width: 34, height: 34, borderRadius: 10, background: "linear-gradient(135deg, #0f9e6e, #0bc68e)",
+          width: 32, height: 32, borderRadius: 9, background: "linear-gradient(135deg, #0f9e6e, #0bc68e)",
           display: "flex", alignItems: "center", justifyContent: "center",
-          color: "#fff", fontSize: 16, fontWeight: 700
+          color: "#fff", fontSize: 15, fontWeight: 700
         }}>S</div>
         <div>
-          <div style={{ fontSize: 15, fontWeight: 700, lineHeight: 1.2 }}>Sog'liq kuzatuv</div>
-          <div style={{ fontSize: 10, color: "var(--text-hint)", fontWeight: 500, letterSpacing: 0.5 }}>OILAVIY TIBBIY JURNAL</div>
+          <div style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.2 }}>Sog'liq kuzatuv</div>
+          <div style={{ fontSize: 9, color: "var(--text-hint)", fontWeight: 600, letterSpacing: 0.5, display: "flex", alignItems: "center", gap: 4 }}>
+            <span style={{ width: 6, height: 6, borderRadius: "50%", background: saving ? "var(--warn)" : "var(--accent)", display: "inline-block" }}></span>
+            {saving ? "SAQLANMOQDA..." : `GITHUB · ${config.owner}/${config.repo}`}
+          </div>
         </div>
       </div>
-      <div style={{ display: "flex", gap: 6 }}>
-        <button onClick={() => setModal("aikey")} title="AI sozlama" style={{
-          border: "none", background: data.aiKey ? "var(--accent-light)" : "var(--bg-secondary)",
-          width: 34, height: 34, borderRadius: "50%", fontSize: 15, cursor: "pointer",
-          color: data.aiKey ? "var(--accent)" : "var(--text-hint)"
-        }}>⚡</button>
+      <div style={{ display: "flex", gap: 5 }}>
+        <button onClick={refresh} title="Yangilash" style={{
+          border: "none", background: "var(--bg-secondary)", width: 32, height: 32,
+          borderRadius: "50%", fontSize: 14, cursor: "pointer", color: "var(--text-hint)"
+        }}>↻</button>
         <button onClick={() => setModal("settings")} title="Sozlamalar" style={{
-          border: "none", background: "var(--bg-secondary)",
-          width: 34, height: 34, borderRadius: "50%", fontSize: 15, cursor: "pointer",
-          color: "var(--text-hint)"
+          border: "none", background: "var(--bg-secondary)", width: 32, height: 32,
+          borderRadius: "50%", fontSize: 14, cursor: "pointer", color: "var(--text-hint)"
         }}>⚙</button>
       </div>
     </div>
   );
 
-  /* ─── HOME ─── */
+  /* ═══ Home ═══ */
   const Home = () => {
-    const totalTests = data.testResults.length;
-    const totalVisits = data.doctorVisits.length;
     const abnormal = data.testResults.filter(r => {
       const tt = testType(r.testTypeId);
       return tt && tt.normalMin != null && (r.value < tt.normalMin || r.value > tt.normalMax);
     }).length;
 
     return (
-      <div className="fade-in" style={{ padding: 20 }}>
-        {/* Stats */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginBottom: 24 }}>
+      <div className="fade-in" style={{ padding: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 20 }}>
           {[
             { n: data.members.length, l: "A'zolar", c: "var(--accent)", bg: "var(--accent-light)" },
-            { n: totalTests, l: "Tahlillar", c: "var(--info)", bg: "var(--info-light)" },
+            { n: data.testResults.length, l: "Tahlillar", c: "var(--info)", bg: "var(--info-light)" },
             { n: abnormal, l: "Ogohlantirish", c: abnormal > 0 ? "var(--danger)" : "var(--text-hint)", bg: abnormal > 0 ? "var(--danger-light)" : "var(--bg-secondary)" },
-          ].map((s, i) => (
-            <div key={i} style={{
-              background: s.bg, borderRadius: var_radius_xl, padding: "14px 16px", textAlign: "center"
-            }}>
-              <div style={{ fontSize: 24, fontWeight: 700, color: s.c }}>{s.n}</div>
-              <div style={{ fontSize: 11, fontWeight: 600, color: s.c, opacity: 0.8 }}>{s.l}</div>
+          ].map((s,i) => (
+            <div key={i} style={{ background: s.bg, borderRadius: "var(--radius-xl)", padding: "12px 14px", textAlign: "center" }}>
+              <div style={{ fontSize: 22, fontWeight: 700, color: s.c }}>{s.n}</div>
+              <div style={{ fontSize: 10, fontWeight: 600, color: s.c, opacity: 0.8 }}>{s.l}</div>
             </div>
           ))}
         </div>
 
-        {/* Members */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
           <h2 style={{ fontSize: 17, fontWeight: 700 }}>Oila a'zolari</h2>
-          <PrimaryBtn onClick={() => setModal("addMember")}>+ Qo'shish</PrimaryBtn>
+          <Btn small onClick={() => setModal("addMember")}>+ Qo'shish</Btn>
         </div>
 
         {data.members.length === 0 ? (
           <EmptyState icon="👨‍👩‍👧‍👦" title="Hali a'zo yo'q" sub="Yuqoridagi tugmani bosib qo'shing" />
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {data.members.map((m, idx) => {
-              const tests = mTests(m.id);
-              const visits = mVisits(m.id);
+              const tests = mTests(m.id); const visits = mVisits(m.id);
               const age = m.birthYear ? new Date().getFullYear() - m.birthYear : null;
-              const bad = tests.filter(t => {
-                const tt = testType(t.testTypeId);
-                return tt && tt.normalMin != null && (t.value < tt.normalMin || t.value > tt.normalMax);
-              }).length;
+              const bad = tests.filter(t => { const tt = testType(t.testTypeId); return tt && tt.normalMin!=null && (t.value < tt.normalMin || t.value > tt.normalMax); }).length;
               return (
                 <div key={m.id} onClick={() => goMember(m.id)} style={{
                   background: "var(--bg-card)", border: "1px solid var(--border)",
-                  borderRadius: var_radius_xl, padding: "14px 16px", cursor: "pointer",
+                  borderRadius: "var(--radius-xl)", padding: "12px 14px", cursor: "pointer",
                   transition: "all 0.15s", boxShadow: "var(--shadow-sm)"
                 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                     <div style={{
-                      width: 44, height: 44, borderRadius: 14, flexShrink: 0,
-                      background: COLORS[idx % COLORS.length] + "18",
-                      color: COLORS[idx % COLORS.length],
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: 18, fontWeight: 700
+                      width: 42, height: 42, borderRadius: 13, flexShrink: 0,
+                      background: COLORS[idx % COLORS.length] + "18", color: COLORS[idx % COLORS.length],
+                      display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, fontWeight: 700
                     }}>{m.name.charAt(0).toUpperCase()}</div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontWeight: 600, fontSize: 15 }}>{m.name}</div>
@@ -396,14 +549,10 @@ Iltimos quyidagilarni yoz:
                         {age && <span>{age} yosh</span>}
                         {m.gender && <span>{m.gender}</span>}
                         <span>{tests.length} tahlil</span>
-                        <span>{visits.length} ko'rik</span>
                       </div>
                     </div>
                     {bad > 0 && (
-                      <span style={{
-                        background: "var(--danger-light)", color: "var(--danger)",
-                        fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 20
-                      }}>⚠ {bad}</span>
+                      <span style={{ background: "var(--danger-light)", color: "var(--danger)", fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 20 }}>⚠ {bad}</span>
                     )}
                     <span style={{ color: "var(--text-hint)", fontSize: 18 }}>›</span>
                   </div>
@@ -413,104 +562,79 @@ Iltimos quyidagilarni yoz:
           </div>
         )}
 
-        {/* Compare button */}
         {data.members.length > 1 && (
-          <div style={{ marginTop: 20, textAlign: "center" }}>
-            <OutlineBtn onClick={() => { setView("compare"); setCmpType(data.testTypes[0]?.id || ""); }}>
-              📊 Oila a'zolarini solishtirish
-            </OutlineBtn>
+          <div style={{ marginTop: 16, textAlign: "center" }}>
+            <Btn outline onClick={() => { setView("compare"); setCmpType(data.testTypes[0]?.id || ""); }}>📊 Solishtirish</Btn>
+          </div>
+        )}
+
+        {lastSync && (
+          <div style={{ textAlign: "center", marginTop: 20, fontSize: 11, color: "var(--text-hint)" }}>
+            Oxirgi sinxronizatsiya: {lastSync.toLocaleTimeString("uz-UZ")}
           </div>
         )}
       </div>
     );
   };
 
-  /* ─── MEMBER VIEW ─── */
+  /* ═══ Member ═══ */
   const MemberView = () => {
     const m = member(selMember);
     if (!m) return null;
-    const tests = mTests(m.id);
-    const visits = mVisits(m.id);
+    const tests = mTests(m.id); const visits = mVisits(m.id);
     const age = m.birthYear ? new Date().getFullYear() - m.birthYear : null;
     const idx = data.members.findIndex(x => x.id === m.id);
     const color = COLORS[idx % COLORS.length];
 
     return (
-      <div className="fade-in" style={{ padding: 20 }}>
-        <button onClick={() => setView("home")} style={{
-          border: "none", background: "none", color: "var(--accent)", fontSize: 13,
-          fontWeight: 600, cursor: "pointer", marginBottom: 14, padding: 0
-        }}>← Orqaga</button>
+      <div className="fade-in" style={{ padding: 16 }}>
+        <button onClick={() => setView("home")} style={{ border: "none", background: "none", color: "var(--accent)", fontSize: 13, fontWeight: 600, cursor: "pointer", marginBottom: 12, padding: 0 }}>← Orqaga</button>
 
-        {/* Profile header */}
-        <div style={{
-          background: color + "10", borderRadius: var_radius_xl, padding: 20, marginBottom: 20,
-          border: `1px solid ${color}25`
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 14 }}>
-            <div style={{
-              width: 52, height: 52, borderRadius: 16, background: color + "20",
-              color: color, display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 22, fontWeight: 700
-            }}>{m.name.charAt(0).toUpperCase()}</div>
+        <div style={{ background: color + "10", borderRadius: "var(--radius-xl)", padding: 16, marginBottom: 16, border: `1px solid ${color}25` }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+            <div style={{ width: 48, height: 48, borderRadius: 15, background: color + "20", color: color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, fontWeight: 700 }}>{m.name.charAt(0).toUpperCase()}</div>
             <div>
-              <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 2 }}>{m.name}</h2>
-              <div style={{ fontSize: 13, color: "var(--text-secondary)" }}>
-                {[age && `${age} yosh`, m.gender].filter(Boolean).join(" · ")}
-              </div>
+              <h2 style={{ fontSize: 19, fontWeight: 700, marginBottom: 2 }}>{m.name}</h2>
+              <div style={{ fontSize: 13, color: "var(--text-secondary)" }}>{[age && `${age} yosh`, m.gender].filter(Boolean).join(" · ")}</div>
             </div>
           </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <PrimaryBtn onClick={() => runAI(m.id)}>⚡ AI tahlil</PrimaryBtn>
-            <OutlineBtn small onClick={() => delMember(m.id)} danger>O'chirish</OutlineBtn>
+            <Btn small onClick={() => runAI(m.id)}>⚡ AI tahlil</Btn>
+            <Btn outline small onClick={() => delMember(m.id)} danger>O'chirish</Btn>
           </div>
         </div>
 
         {/* Tabs */}
-        <div style={{ display: "flex", gap: 0, marginBottom: 18, background: "var(--bg-secondary)", borderRadius: var_radius_xl, padding: 3 }}>
-          {[
-            { key: "tests", label: `Tahlillar (${tests.length})` },
-            { key: "visits", label: `Ko'riklar (${visits.length})` },
-            { key: "chart", label: "Grafik" },
-          ].map(t => (
+        <div style={{ display: "flex", gap: 0, marginBottom: 16, background: "var(--bg-secondary)", borderRadius: "var(--radius-xl)", padding: 3 }}>
+          {[{ key: "tests", label: `Tahlillar (${tests.length})` }, { key: "visits", label: `Ko'riklar (${visits.length})` }, { key: "chart", label: "Grafik" }].map(t => (
             <button key={t.key} onClick={() => setTab(t.key)} style={{
               flex: 1, border: "none", padding: "9px 8px", borderRadius: 12, fontSize: 12, fontWeight: 600,
               background: tab === t.key ? "var(--bg-card)" : "transparent",
               color: tab === t.key ? "var(--text)" : "var(--text-secondary)",
-              boxShadow: tab === t.key ? "var(--shadow-sm)" : "none",
-              cursor: "pointer", transition: "all 0.15s"
+              boxShadow: tab === t.key ? "var(--shadow-sm)" : "none", cursor: "pointer", transition: "all 0.15s"
             }}>{t.label}</button>
           ))}
         </div>
 
-        {/* Tests tab */}
         {tab === "tests" && (
           <div>
-            <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
-              <PrimaryBtn onClick={() => setModal({ type: "addTest", mid: m.id })}>+ Tahlil</PrimaryBtn>
+            <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 10 }}>
+              <Btn small onClick={() => setModal({ type: "addTest", mid: m.id })}>+ Tahlil</Btn>
             </div>
-            {tests.length === 0 ? <EmptyState icon="🧪" title="Tahlil yo'q" sub="Yuqoridagi tugmani bosib qo'shing" /> : (
+            {tests.length === 0 ? <EmptyState icon="🧪" title="Tahlil yo'q" /> : (
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {tests.map(t => {
                   const tt = testType(t.testTypeId);
                   return (
-                    <div key={t.id} style={{
-                      background: "var(--bg-card)", border: "1px solid var(--border)",
-                      borderRadius: "var(--radius-lg)", padding: "12px 14px",
-                      display: "flex", justifyContent: "space-between", alignItems: "center"
-                    }}>
+                    <div key={t.id} style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", padding: "11px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <div style={{ minWidth: 0 }}>
                         <div style={{ fontWeight: 600, fontSize: 14 }}>{tt?.name || "?"}</div>
-                        <div style={{ fontSize: 12, color: "var(--text-hint)", marginTop: 2 }}>
-                          {fmtDate(t.date)}{t.note ? ` · ${t.note}` : ""}
-                        </div>
+                        <div style={{ fontSize: 12, color: "var(--text-hint)", marginTop: 2 }}>{fmtDate(t.date)}{t.note ? ` · ${t.note}` : ""}</div>
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-                        <span style={{ fontWeight: 700, fontSize: 16 }}>
-                          {t.value} <span style={{ fontSize: 11, fontWeight: 500, color: "var(--text-hint)" }}>{tt?.unit}</span>
-                        </span>
+                        <span style={{ fontWeight: 700, fontSize: 15 }}>{t.value} <span style={{ fontSize: 11, fontWeight: 500, color: "var(--text-hint)" }}>{tt?.unit}</span></span>
                         <Badge value={t.value} min={tt?.normalMin} max={tt?.normalMax} />
-                        <button onClick={(e) => { e.stopPropagation(); save({ ...data, testResults: data.testResults.filter(r => r.id !== t.id) }); }}
+                        <button onClick={() => saveToGitHub({ ...data, testResults: data.testResults.filter(r => r.id !== t.id) })}
                           style={{ border: "none", background: "none", color: "var(--text-hint)", cursor: "pointer", fontSize: 16, padding: "0 2px" }}>×</button>
                       </div>
                     </div>
@@ -521,27 +645,23 @@ Iltimos quyidagilarni yoz:
           </div>
         )}
 
-        {/* Visits tab */}
         {tab === "visits" && (
           <div>
-            <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
-              <PrimaryBtn onClick={() => setModal({ type: "addVisit", mid: m.id })}>+ Ko'rik</PrimaryBtn>
+            <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 10 }}>
+              <Btn small onClick={() => setModal({ type: "addVisit", mid: m.id })}>+ Ko'rik</Btn>
             </div>
-            {visits.length === 0 ? <EmptyState icon="🩺" title="Ko'rik yo'q" sub="Yuqoridagi tugmani bosib qo'shing" /> : (
+            {visits.length === 0 ? <EmptyState icon="🩺" title="Ko'rik yo'q" /> : (
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {visits.map(v => {
                   const dt = docType(v.doctorTypeId);
                   return (
-                    <div key={v.id} style={{
-                      background: "var(--bg-card)", border: "1px solid var(--border)",
-                      borderRadius: "var(--radius-lg)", padding: "12px 14px"
-                    }}>
+                    <div key={v.id} style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", padding: "11px 14px" }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                         <div>
                           <div style={{ fontWeight: 600, fontSize: 14 }}>{dt?.name || "?"}</div>
                           <div style={{ fontSize: 12, color: "var(--text-hint)", marginTop: 2 }}>{fmtDate(v.date)}</div>
                         </div>
-                        <button onClick={() => save({ ...data, doctorVisits: data.doctorVisits.filter(x => x.id !== v.id) })}
+                        <button onClick={() => saveToGitHub({ ...data, doctorVisits: data.doctorVisits.filter(x => x.id !== v.id) })}
                           style={{ border: "none", background: "none", color: "var(--text-hint)", cursor: "pointer", fontSize: 16 }}>×</button>
                       </div>
                       {v.diagnosis && <div style={{ marginTop: 8, fontSize: 13, fontWeight: 600, color: "var(--info)" }}>{v.diagnosis}</div>}
@@ -554,7 +674,6 @@ Iltimos quyidagilarni yoz:
           </div>
         )}
 
-        {/* Chart tab */}
         {tab === "chart" && <ChartTab tests={tests} />}
       </div>
     );
@@ -563,319 +682,159 @@ Iltimos quyidagilarni yoz:
   const ChartTab = ({ tests }) => {
     const [chartType, setChartType] = useState(data.testTypes[0]?.id || "");
     const tt = testType(chartType);
-    const results = tests
-      .filter(t => t.testTypeId === chartType)
-      .sort((a,b) => new Date(a.date) - new Date(b.date))
-      .map(t => ({ date: fmtDate(t.date), Natija: t.value }));
-
+    const results = tests.filter(t => t.testTypeId === chartType).sort((a,b) => new Date(a.date) - new Date(b.date)).map(t => ({ date: fmtDate(t.date), Natija: t.value }));
     return (
       <div>
-        <Field label="Tahlil turini tanlang">
+        <Field label="Tahlil turi">
           <select value={chartType} onChange={e => setChartType(e.target.value)}>
             {data.testTypes.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
           </select>
         </Field>
         {results.length === 0 ? <EmptyState icon="📈" title="Ma'lumot yo'q" /> : (
-          <div style={{ marginTop: 8 }}>
-            <ResponsiveContainer width="100%" height={260}>
-              <ComposedChart data={results} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
+          <div>
+            <ResponsiveContainer width="100%" height={250}>
+              <ComposedChart data={results} margin={{ top: 5, right: 10, left: -15, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" fontSize={11} />
-                <YAxis fontSize={11} />
+                <XAxis dataKey="date" fontSize={10} />
+                <YAxis fontSize={10} />
                 <Tooltip />
                 {tt?.normalMin != null && <ReferenceLine y={tt.normalMin} stroke="#e8443a" strokeDasharray="5 5" label={{ value: "Min", fontSize: 10, fill: "#e8443a" }} />}
                 {tt?.normalMax != null && <ReferenceLine y={tt.normalMax} stroke="#e8443a" strokeDasharray="5 5" label={{ value: "Max", fontSize: 10, fill: "#e8443a" }} />}
                 <Line type="monotone" dataKey="Natija" stroke="#0f9e6e" strokeWidth={2.5} dot={{ r: 5, fill: "#0f9e6e", stroke: "#fff", strokeWidth: 2 }} />
               </ComposedChart>
             </ResponsiveContainer>
-            {tt && (
-              <div style={{ textAlign: "center", fontSize: 12, color: "var(--text-hint)", marginTop: 8 }}>
-                Normal diapazon: {tt.normalMin} — {tt.normalMax} {tt.unit}
-              </div>
-            )}
+            {tt && <div style={{ textAlign: "center", fontSize: 12, color: "var(--text-hint)", marginTop: 6 }}>Normal: {tt.normalMin} — {tt.normalMax} {tt.unit}</div>}
           </div>
         )}
       </div>
     );
   };
 
-  /* ─── COMPARE VIEW ─── */
+  /* ═══ Compare ═══ */
   const CompareView = () => {
     const [selMembers, setSelMembers] = useState(data.members.map(m => m.id));
     const tt = testType(cmpType);
     const toggle = (id) => setSelMembers(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
-
-    const allDates = [...new Set(
-      data.testResults.filter(r => r.testTypeId === cmpType && selMembers.includes(r.memberId)).map(r => r.date)
-    )].sort();
-
+    const allDates = [...new Set(data.testResults.filter(r => r.testTypeId === cmpType && selMembers.includes(r.memberId)).map(r => r.date))].sort();
     const chartData = allDates.map(date => {
       const row = { date: fmtDate(date) };
-      selMembers.forEach(mid => {
-        const m = member(mid);
-        const r = data.testResults.find(x => x.date === date && x.testTypeId === cmpType && x.memberId === mid);
-        if (r && m) row[m.name] = r.value;
-      });
+      selMembers.forEach(mid => { const m = member(mid); const r = data.testResults.find(x => x.date === date && x.testTypeId === cmpType && x.memberId === mid); if (r && m) row[m.name] = r.value; });
       return row;
     });
 
     return (
-      <div className="fade-in" style={{ padding: 20 }}>
-        <button onClick={() => setView("home")} style={{
-          border: "none", background: "none", color: "var(--accent)", fontSize: 13,
-          fontWeight: 600, cursor: "pointer", marginBottom: 14, padding: 0
-        }}>← Orqaga</button>
-        <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 16 }}>Oila solishtirish</h2>
-
+      <div className="fade-in" style={{ padding: 16 }}>
+        <button onClick={() => setView("home")} style={{ border: "none", background: "none", color: "var(--accent)", fontSize: 13, fontWeight: 600, cursor: "pointer", marginBottom: 12, padding: 0 }}>← Orqaga</button>
+        <h2 style={{ fontSize: 17, fontWeight: 700, marginBottom: 14 }}>Oila solishtirish</h2>
         <Field label="Tahlil turi">
           <select value={cmpType} onChange={e => setCmpType(e.target.value)}>
             {data.testTypes.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
           </select>
         </Field>
-
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 16 }}>
-          {data.members.map((m, i) => (
-            <Pill key={m.id} active={selMembers.includes(m.id)} color={COLORS[i % COLORS.length]} onClick={() => toggle(m.id)}>
-              {m.name}
-            </Pill>
-          ))}
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 14 }}>
+          {data.members.map((m,i) => <Pill key={m.id} active={selMembers.includes(m.id)} color={COLORS[i % COLORS.length]} onClick={() => toggle(m.id)}>{m.name}</Pill>)}
         </div>
-
         {chartData.length === 0 ? <EmptyState icon="📊" title="Ma'lumot topilmadi" /> : (
-          <div>
-            <ResponsiveContainer width="100%" height={300}>
-              <ComposedChart data={chartData} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" fontSize={11} />
-                <YAxis fontSize={11} />
-                <Tooltip />
-                {tt?.normalMin != null && <ReferenceLine y={tt.normalMin} stroke="#e8443a" strokeDasharray="5 5" />}
-                {tt?.normalMax != null && <ReferenceLine y={tt.normalMax} stroke="#e8443a" strokeDasharray="5 5" />}
-                {selMembers.map((mid, i) => {
-                  const m = member(mid);
-                  return m ? <Line key={mid} type="monotone" dataKey={m.name} stroke={COLORS[data.members.findIndex(x => x.id === mid) % COLORS.length]} strokeWidth={2} dot={{ r: 4 }} /> : null;
-                })}
-                <Legend />
-              </ComposedChart>
-            </ResponsiveContainer>
-          </div>
+          <ResponsiveContainer width="100%" height={280}>
+            <ComposedChart data={chartData} margin={{ top: 5, right: 10, left: -15, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" fontSize={10} />
+              <YAxis fontSize={10} />
+              <Tooltip />
+              {tt?.normalMin != null && <ReferenceLine y={tt.normalMin} stroke="#e8443a" strokeDasharray="5 5" />}
+              {tt?.normalMax != null && <ReferenceLine y={tt.normalMax} stroke="#e8443a" strokeDasharray="5 5" />}
+              {selMembers.map((mid, i) => { const m = member(mid); return m ? <Line key={mid} type="monotone" dataKey={m.name} stroke={COLORS[data.members.findIndex(x=>x.id===mid)%COLORS.length]} strokeWidth={2} dot={{ r: 4 }} /> : null; })}
+              <Legend />
+            </ComposedChart>
+          </ResponsiveContainer>
         )}
       </div>
     );
   };
 
-  /* ─── AI VIEW ─── */
+  /* ═══ AI ═══ */
   const AiView = () => (
-    <div className="fade-in" style={{ padding: 20 }}>
-      <button onClick={() => setView("member")} style={{
-        border: "none", background: "none", color: "var(--accent)", fontSize: 13,
-        fontWeight: 600, cursor: "pointer", marginBottom: 14, padding: 0
-      }}>← Orqaga</button>
-      <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 16 }}>⚡ AI tahlili</h2>
-      <div style={{
-        background: "var(--info-light)", borderRadius: "var(--radius)", padding: "10px 14px",
-        fontSize: 12, color: "var(--info)", marginBottom: 16, fontWeight: 500
-      }}>
+    <div className="fade-in" style={{ padding: 16 }}>
+      <button onClick={() => setView("member")} style={{ border: "none", background: "none", color: "var(--accent)", fontSize: 13, fontWeight: 600, cursor: "pointer", marginBottom: 12, padding: 0 }}>← Orqaga</button>
+      <h2 style={{ fontSize: 17, fontWeight: 700, marginBottom: 14 }}>⚡ AI tahlili</h2>
+      <div style={{ background: "var(--info-light)", borderRadius: "var(--radius)", padding: "9px 12px", fontSize: 12, color: "var(--info)", marginBottom: 14, fontWeight: 500 }}>
         Bu AI tomonidan berilgan umumiy ma'lumot. Shifokor maslahatini almashtirmaydi.
       </div>
-      {aiLoading ? (
-        <div style={{ textAlign: "center", padding: 40 }}>
-          <div style={{ width: 36, height: 36, border: "3px solid var(--border)", borderTopColor: "var(--accent)", borderRadius: "50%", animation: "spin 0.7s linear infinite", margin: "0 auto 12px" }} />
-          <div style={{ color: "var(--text-secondary)", fontSize: 14 }}>Tahlil qilinmoqda...</div>
-        </div>
-      ) : (
-        <div style={{
-          background: "var(--bg-card)", border: "1px solid var(--border)",
-          borderRadius: "var(--radius-lg)", padding: "18px 20px",
-          fontSize: 14, lineHeight: 1.8, whiteSpace: "pre-wrap"
-        }}>{aiResult || "Natija yo'q"}</div>
+      {aiLoading ? <Spinner text="Tahlil qilinmoqda..." /> : (
+        <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", padding: "16px 18px", fontSize: 14, lineHeight: 1.8, whiteSpace: "pre-wrap" }}>{aiResult || "Natija yo'q"}</div>
       )}
     </div>
   );
 
-  /* ─── MODALS ─── */
+  /* ═══ Modals ═══ */
   const renderModal = () => {
-    if (modal === "addMember") return <AddMemberForm />;
+    if (modal === "addMember") {
+      return <AddMemberForm onSave={(m) => { saveToGitHub({ ...data, members: [...data.members, m] }); setModal(null); }} onClose={() => setModal(null)} />;
+    }
+    if (modal?.type === "addTest") {
+      return <AddTestForm mid={modal.mid} testTypes={data.testTypes} onSave={(r) => { saveToGitHub({ ...data, testResults: [...data.testResults, r] }); setModal(null); }} onClose={() => setModal(null)} />;
+    }
+    if (modal?.type === "addVisit") {
+      return <AddVisitForm mid={modal.mid} doctorTypes={data.doctorTypes} onSave={(v) => { saveToGitHub({ ...data, doctorVisits: [...data.doctorVisits, v] }); setModal(null); }} onClose={() => setModal(null)} />;
+    }
+    if (modal === "addTestType") {
+      return <AddTestTypeForm onSave={(t) => { saveToGitHub({ ...data, testTypes: [...data.testTypes, t] }); setModal(null); }} onClose={() => setModal(null)} />;
+    }
+    if (modal === "addDocType") {
+      return <AddDocTypeForm onSave={(d) => { saveToGitHub({ ...data, doctorTypes: [...data.doctorTypes, d] }); setModal(null); }} onClose={() => setModal(null)} />;
+    }
     if (modal === "settings") return <SettingsModal />;
     if (modal === "aikey") return <AIKeyModal />;
-    if (modal?.type === "addTest") return <AddTestForm mid={modal.mid} />;
-    if (modal?.type === "addVisit") return <AddVisitForm mid={modal.mid} />;
-    if (modal === "addTestType") return <AddTestTypeForm />;
-    if (modal === "addDocType") return <AddDocTypeForm />;
     return null;
-  };
-
-  const AddMemberForm = () => {
-    const [name, setName] = useState("");
-    const [birthYear, setBirthYear] = useState("");
-    const [gender, setGender] = useState("");
-    return (
-      <Modal title="Yangi oila a'zosi" onClose={() => setModal(null)}>
-        <Field label="Ismi"><input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Masalan: Ahmad" /></Field>
-        <Field label="Tug'ilgan yili"><input type="number" value={birthYear} onChange={e => setBirthYear(e.target.value)} placeholder="1990" /></Field>
-        <Field label="Jinsi">
-          <div style={{ display: "flex", gap: 8 }}>
-            {["Erkak", "Ayol"].map(g => (
-              <Pill key={g} active={gender === g} onClick={() => setGender(g)}>{g}</Pill>
-            ))}
-          </div>
-        </Field>
-        <PrimaryBtn full onClick={() => {
-          if (!name.trim()) return;
-          save({ ...data, members: [...data.members, { id: uid(), name: name.trim(), birthYear: parseInt(birthYear) || null, gender }] });
-          setModal(null);
-        }}>Qo'shish</PrimaryBtn>
-      </Modal>
-    );
-  };
-
-  const AddTestForm = ({ mid }) => {
-    const [tid, setTid] = useState(data.testTypes[0]?.id || "");
-    const [val, setVal] = useState("");
-    const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
-    const [note, setNote] = useState("");
-    return (
-      <Modal title="Tahlil natijasi" onClose={() => setModal(null)}>
-        <Field label="Tahlil turi">
-          <select value={tid} onChange={e => setTid(e.target.value)}>
-            {data.testTypes.map(t => <option key={t.id} value={t.id}>{t.name} ({t.unit})</option>)}
-          </select>
-        </Field>
-        <Field label="Natija"><input type="number" value={val} onChange={e => setVal(e.target.value)} placeholder="5.4" step="any" /></Field>
-        <Field label="Sana"><input type="date" value={date} onChange={e => setDate(e.target.value)} /></Field>
-        <Field label="Izoh (ixtiyoriy)"><input type="text" value={note} onChange={e => setNote(e.target.value)} placeholder="Lab nomi yoki izoh" /></Field>
-        <PrimaryBtn full onClick={() => {
-          if (!val) return;
-          save({ ...data, testResults: [...data.testResults, { id: uid(), memberId: mid, testTypeId: tid, value: parseFloat(val), date, note }] });
-          setModal(null);
-        }}>Saqlash</PrimaryBtn>
-      </Modal>
-    );
-  };
-
-  const AddVisitForm = ({ mid }) => {
-    const [did, setDid] = useState(data.doctorTypes[0]?.id || "");
-    const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
-    const [diag, setDiag] = useState("");
-    const [notes, setNotes] = useState("");
-    return (
-      <Modal title="Shifokor ko'rigi" onClose={() => setModal(null)}>
-        <Field label="Shifokor turi">
-          <select value={did} onChange={e => setDid(e.target.value)}>
-            {data.doctorTypes.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
-          </select>
-        </Field>
-        <Field label="Sana"><input type="date" value={date} onChange={e => setDate(e.target.value)} /></Field>
-        <Field label="Tashxis"><input type="text" value={diag} onChange={e => setDiag(e.target.value)} placeholder="Masalan: Sog'lom" /></Field>
-        <Field label="Tavsiya va izohlar"><textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Shifokor tavsiyalari..." /></Field>
-        <PrimaryBtn full onClick={() => {
-          save({ ...data, doctorVisits: [...data.doctorVisits, { id: uid(), memberId: mid, doctorTypeId: did, date, diagnosis: diag, notes }] });
-          setModal(null);
-        }}>Saqlash</PrimaryBtn>
-      </Modal>
-    );
-  };
-
-  const AddTestTypeForm = () => {
-    const [name, setName] = useState("");
-    const [unit, setUnit] = useState("");
-    const [min, setMin] = useState("");
-    const [max, setMax] = useState("");
-    return (
-      <Modal title="Yangi tahlil turi" onClose={() => setModal(null)}>
-        <Field label="Nomi"><input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Masalan: Eritrotsitlar" /></Field>
-        <Field label="O'lchov birligi"><input type="text" value={unit} onChange={e => setUnit(e.target.value)} placeholder="Masalan: 10¹²/l" /></Field>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-          <Field label="Normal min"><input type="number" value={min} onChange={e => setMin(e.target.value)} placeholder="3.5" step="any" /></Field>
-          <Field label="Normal max"><input type="number" value={max} onChange={e => setMax(e.target.value)} placeholder="5.5" step="any" /></Field>
-        </div>
-        <PrimaryBtn full onClick={() => {
-          if (!name.trim()) return;
-          save({ ...data, testTypes: [...data.testTypes, { id: uid(), name: name.trim(), unit, normalMin: parseFloat(min) || null, normalMax: parseFloat(max) || null }] });
-          setModal(null);
-        }}>Qo'shish</PrimaryBtn>
-      </Modal>
-    );
-  };
-
-  const AddDocTypeForm = () => {
-    const [name, setName] = useState("");
-    return (
-      <Modal title="Yangi shifokor turi" onClose={() => setModal(null)}>
-        <Field label="Nomi"><input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Masalan: Otorinolaringolog" /></Field>
-        <PrimaryBtn full onClick={() => {
-          if (!name.trim()) return;
-          save({ ...data, doctorTypes: [...data.doctorTypes, { id: uid(), name: name.trim() }] });
-          setModal(null);
-        }}>Qo'shish</PrimaryBtn>
-      </Modal>
-    );
   };
 
   const SettingsModal = () => (
     <Modal title="Sozlamalar" onClose={() => setModal(null)}>
-      <div style={{ marginBottom: 20 }}>
-        <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 10 }}>Tahlil turlari</div>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 8 }}>Tahlil turlari</div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
           {data.testTypes.map(t => (
-            <span key={t.id} style={{
-              fontSize: 12, background: "var(--bg-secondary)", padding: "5px 10px",
-              borderRadius: 20, display: "flex", alignItems: "center", gap: 6
-            }}>
+            <span key={t.id} style={{ fontSize: 12, background: "var(--bg-secondary)", padding: "5px 10px", borderRadius: 20, display: "flex", alignItems: "center", gap: 6 }}>
               {t.name}
-              <button onClick={() => save({ ...data, testTypes: data.testTypes.filter(x => x.id !== t.id) })}
+              <button onClick={() => saveToGitHub({ ...data, testTypes: data.testTypes.filter(x => x.id !== t.id) })}
                 style={{ border: "none", background: "none", cursor: "pointer", color: "var(--text-hint)", fontSize: 14 }}>×</button>
             </span>
           ))}
         </div>
-        <OutlineBtn small onClick={() => { setModal("addTestType"); }}>+ Tahlil turi qo'shish</OutlineBtn>
+        <Btn outline small onClick={() => setModal("addTestType")}>+ Tahlil turi</Btn>
       </div>
-
-      <div style={{ marginBottom: 20 }}>
-        <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 10 }}>Shifokor turlari</div>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 8 }}>Shifokor turlari</div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
           {data.doctorTypes.map(d => (
-            <span key={d.id} style={{
-              fontSize: 12, background: "var(--bg-secondary)", padding: "5px 10px",
-              borderRadius: 20, display: "flex", alignItems: "center", gap: 6
-            }}>
+            <span key={d.id} style={{ fontSize: 12, background: "var(--bg-secondary)", padding: "5px 10px", borderRadius: 20, display: "flex", alignItems: "center", gap: 6 }}>
               {d.name}
-              <button onClick={() => save({ ...data, doctorTypes: data.doctorTypes.filter(x => x.id !== d.id) })}
+              <button onClick={() => saveToGitHub({ ...data, doctorTypes: data.doctorTypes.filter(x => x.id !== d.id) })}
                 style={{ border: "none", background: "none", cursor: "pointer", color: "var(--text-hint)", fontSize: 14 }}>×</button>
             </span>
           ))}
         </div>
-        <OutlineBtn small onClick={() => { setModal("addDocType"); }}>+ Shifokor turi qo'shish</OutlineBtn>
+        <Btn outline small onClick={() => setModal("addDocType")}>+ Shifokor turi</Btn>
       </div>
-
-      <div style={{ borderTop: "1px solid var(--border)", paddingTop: 16 }}>
-        <OutlineBtn danger onClick={() => {
-          if (confirm("BARCHA ma'lumotlar o'chiriladi! Davom etasizmi?")) {
-            save(DEFAULT); setSelMember(null); setView("home"); setModal(null);
-          }
-        }}>🗑 Barcha ma'lumotlarni tozalash</OutlineBtn>
+      <div style={{ borderTop: "1px solid var(--border)", paddingTop: 14, display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <Btn outline small onClick={() => setModal("aikey")}>⚡ AI sozlama</Btn>
+        <Btn outline small danger onClick={logout}>Chiqish</Btn>
       </div>
     </Modal>
   );
 
   const AIKeyModal = () => {
-    const [key, setKey] = useState(data.aiKey || "");
+    const [key, setKey] = useState(config.aiKey || "");
     return (
-      <Modal title="⚡ AI sozlamalari" onClose={() => setModal(null)}>
-        <div style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.6, marginBottom: 16 }}>
-          AI tahlil funksiyasi uchun Anthropic API kaliti kerak. Kalitingizni
-          <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener" style={{ color: "var(--accent)", textDecoration: "none", fontWeight: 600 }}> console.anthropic.com </a>
-          saytidan olishingiz mumkin. Kalit faqat brauzeringizda saqlanadi.
+      <Modal title="⚡ AI sozlama" onClose={() => setModal(null)}>
+        <div style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.6, marginBottom: 14 }}>
+          AI tahlil uchun Anthropic API kaliti kerak.
+          <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener" style={{ color: "var(--accent)", fontWeight: 600 }}> console.anthropic.com</a> dan oling.
         </div>
         <Field label="API kaliti">
-          <input type="text" value={key} onChange={e => setKey(e.target.value)} placeholder="sk-ant-api03-..." />
+          <input type="password" value={key} onChange={e => setKey(e.target.value)} placeholder="sk-ant-api03-..." />
         </Field>
-        <div style={{ display: "flex", gap: 8 }}>
-          <PrimaryBtn full onClick={() => { save({ ...data, aiKey: key }); setModal(null); }}>Saqlash</PrimaryBtn>
-          {data.aiKey && (
-            <OutlineBtn danger onClick={() => { save({ ...data, aiKey: "" }); setModal(null); }}>O'chirish</OutlineBtn>
-          )}
-        </div>
+        <Btn full onClick={() => { saveConfig({ ...config, aiKey: key }); setModal(null); showToast("AI sozlandi!"); }}>Saqlash</Btn>
       </Modal>
     );
   };
@@ -888,7 +847,153 @@ Iltimos quyidagilarni yoz:
       {view === "compare" && <CompareView />}
       {view === "ai" && <AiView />}
       {renderModal()}
+      <Toast {...(toast || {})} />
     </div>
+  );
+}
+
+/* ═══════════════════════
+   SETUP SCREEN
+   ═══════════════════════ */
+
+function SetupScreen({ onSave }) {
+  const [step, setStep] = useState(1);
+  const [owner, setOwner] = useState("");
+  const [repo, setRepo] = useState("sogliq");
+  const [token, setToken] = useState("");
+  const [testing, setTesting] = useState(false);
+  const [error, setError] = useState("");
+
+  const testAndSave = async () => {
+    if (!owner || !repo || !token) { setError("Barcha maydonlarni to'ldiring"); return; }
+    setTesting(true); setError("");
+    try {
+      const db = new GitHubDB(owner.trim(), repo.trim(), token.trim());
+      await db.test();
+      onSave({ owner: owner.trim(), repo: repo.trim(), token: token.trim(), aiKey: "" });
+    } catch (e) {
+      setError(e.message);
+    }
+    setTesting(false);
+  };
+
+  return (
+    <div style={{ maxWidth: 480, margin: "0 auto", minHeight: "100vh", background: "var(--bg)", display: "flex", flexDirection: "column", justifyContent: "center", padding: 24 }}>
+      <div className="fade-in" style={{ textAlign: "center", marginBottom: 32 }}>
+        <div style={{
+          width: 64, height: 64, borderRadius: 20, background: "linear-gradient(135deg, #0f9e6e, #0bc68e)",
+          display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px",
+          color: "#fff", fontSize: 28, fontWeight: 700
+        }}>S</div>
+        <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 6 }}>Sog'liq kuzatuv</h1>
+        <p style={{ color: "var(--text-secondary)", fontSize: 14 }}>Oilaviy tibbiy jurnal</p>
+      </div>
+
+      {step === 1 && (
+        <div className="fade-in" style={{ background: "var(--bg-card)", borderRadius: "var(--radius-xl)", padding: 24, border: "1px solid var(--border)" }}>
+          <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>GitHub'ga ulash</h3>
+          <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.6, marginBottom: 20 }}>
+            Barcha ma'lumotlar GitHub repo'da saqlanadi. Oila a'zolari havolani ochib, birgalikda foydalanadi.
+          </p>
+
+          <div style={{ background: "var(--bg-secondary)", borderRadius: "var(--radius)", padding: "14px 16px", marginBottom: 20 }}>
+            <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 10 }}>Birinchi qadamlar:</div>
+            <div style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.8 }}>
+              1. <a href="https://github.com/new" target="_blank" rel="noopener" style={{ color: "var(--accent)", fontWeight: 600 }}>github.com/new</a> → yangi <b>public</b> repo yarating<br/>
+              2. <a href="https://github.com/settings/tokens/new?scopes=repo&description=Sogliq%20App" target="_blank" rel="noopener" style={{ color: "var(--accent)", fontWeight: 600 }}>Token yarating</a> (repo huquqi bilan)<br/>
+              3. Quyida ma'lumotlarni kiriting
+            </div>
+          </div>
+
+          <Field label="GitHub username" hint="Masalan: ali-uzb">
+            <input type="text" value={owner} onChange={e => setOwner(e.target.value)} placeholder="ali-uzb" />
+          </Field>
+          <Field label="Repo nomi" hint="Yangi yaratgan repo nomingiz">
+            <input type="text" value={repo} onChange={e => setRepo(e.target.value)} placeholder="sogliq" />
+          </Field>
+          <Field label="Personal Access Token" hint="Faqat brauzeringizda saqlanadi, hech kimga yuborilmaydi">
+            <input type="password" value={token} onChange={e => setToken(e.target.value)} placeholder="ghp_xxxxxxxxxxxx" />
+          </Field>
+
+          {error && (
+            <div style={{ background: "var(--danger-light)", color: "var(--danger)", padding: "10px 14px", borderRadius: "var(--radius)", fontSize: 13, fontWeight: 500, marginBottom: 14 }}>
+              {error}
+            </div>
+          )}
+
+          <Btn full onClick={testAndSave} disabled={testing}>
+            {testing ? "Tekshirilmoqda..." : "Ulash va boshlash"}
+          </Btn>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ═══ Form Components ═══ */
+
+function AddMemberForm({ onSave, onClose }) {
+  const [name, setName] = useState(""); const [by, setBy] = useState(""); const [g, setG] = useState("");
+  return (
+    <Modal title="Yangi oila a'zosi" onClose={onClose}>
+      <Field label="Ismi"><input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Ahmad" /></Field>
+      <Field label="Tug'ilgan yili"><input type="number" value={by} onChange={e => setBy(e.target.value)} placeholder="1990" /></Field>
+      <Field label="Jinsi">
+        <div style={{ display: "flex", gap: 8 }}>{["Erkak","Ayol"].map(x => <Pill key={x} active={g===x} onClick={() => setG(x)}>{x}</Pill>)}</div>
+      </Field>
+      <Btn full onClick={() => { if (!name.trim()) return; onSave({ id: uid(), name: name.trim(), birthYear: parseInt(by)||null, gender: g }); }}>Qo'shish</Btn>
+    </Modal>
+  );
+}
+
+function AddTestForm({ mid, testTypes, onSave, onClose }) {
+  const [tid, setTid] = useState(testTypes[0]?.id||""); const [val, setVal] = useState(""); const [date, setDate] = useState(new Date().toISOString().split("T")[0]); const [note, setNote] = useState("");
+  return (
+    <Modal title="Tahlil natijasi" onClose={onClose}>
+      <Field label="Tahlil turi"><select value={tid} onChange={e => setTid(e.target.value)}>{testTypes.map(t => <option key={t.id} value={t.id}>{t.name} ({t.unit})</option>)}</select></Field>
+      <Field label="Natija"><input type="number" value={val} onChange={e => setVal(e.target.value)} placeholder="5.4" step="any" /></Field>
+      <Field label="Sana"><input type="date" value={date} onChange={e => setDate(e.target.value)} /></Field>
+      <Field label="Izoh"><input type="text" value={note} onChange={e => setNote(e.target.value)} placeholder="Ixtiyoriy" /></Field>
+      <Btn full onClick={() => { if (!val) return; onSave({ id: uid(), memberId: mid, testTypeId: tid, value: parseFloat(val), date, note }); }}>Saqlash</Btn>
+    </Modal>
+  );
+}
+
+function AddVisitForm({ mid, doctorTypes, onSave, onClose }) {
+  const [did, setDid] = useState(doctorTypes[0]?.id||""); const [date, setDate] = useState(new Date().toISOString().split("T")[0]); const [diag, setDiag] = useState(""); const [notes, setNotes] = useState("");
+  return (
+    <Modal title="Shifokor ko'rigi" onClose={onClose}>
+      <Field label="Shifokor turi"><select value={did} onChange={e => setDid(e.target.value)}>{doctorTypes.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}</select></Field>
+      <Field label="Sana"><input type="date" value={date} onChange={e => setDate(e.target.value)} /></Field>
+      <Field label="Tashxis"><input type="text" value={diag} onChange={e => setDiag(e.target.value)} placeholder="Masalan: Sog'lom" /></Field>
+      <Field label="Tavsiya"><textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Shifokor tavsiyalari..." /></Field>
+      <Btn full onClick={() => { onSave({ id: uid(), memberId: mid, doctorTypeId: did, date, diagnosis: diag, notes }); }}>Saqlash</Btn>
+    </Modal>
+  );
+}
+
+function AddTestTypeForm({ onSave, onClose }) {
+  const [name, setName] = useState(""); const [unit, setUnit] = useState(""); const [min, setMin] = useState(""); const [max, setMax] = useState("");
+  return (
+    <Modal title="Yangi tahlil turi" onClose={onClose}>
+      <Field label="Nomi"><input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Eritrotsitlar" /></Field>
+      <Field label="O'lchov birligi"><input type="text" value={unit} onChange={e => setUnit(e.target.value)} placeholder="10¹²/l" /></Field>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+        <Field label="Normal min"><input type="number" value={min} onChange={e => setMin(e.target.value)} step="any" /></Field>
+        <Field label="Normal max"><input type="number" value={max} onChange={e => setMax(e.target.value)} step="any" /></Field>
+      </div>
+      <Btn full onClick={() => { if (!name.trim()) return; onSave({ id: uid(), name: name.trim(), unit, normalMin: parseFloat(min)||null, normalMax: parseFloat(max)||null }); }}>Qo'shish</Btn>
+    </Modal>
+  );
+}
+
+function AddDocTypeForm({ onSave, onClose }) {
+  const [name, setName] = useState("");
+  return (
+    <Modal title="Yangi shifokor turi" onClose={onClose}>
+      <Field label="Nomi"><input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Otorinolaringolog" /></Field>
+      <Btn full onClick={() => { if (!name.trim()) return; onSave({ id: uid(), name: name.trim() }); }}>Qo'shish</Btn>
+    </Modal>
   );
 }
 
