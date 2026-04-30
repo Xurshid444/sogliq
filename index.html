@@ -8,6 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -182,6 +183,24 @@ async function saveData(){
 }
 
 /* ═══ Helpers ═══ */
+async function pdfToImages(file, maxPages=15){
+  if(typeof pdfjsLib==='undefined') throw new Error("PDF kutubxonasi yuklanmadi, sahifani yangilang");
+  pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  const ab = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({data:new Uint8Array(ab)}).promise;
+  const total = Math.min(pdf.numPages, maxPages);
+  const images = [];
+  for(let i=1; i<=total; i++){
+    const page = await pdf.getPage(i);
+    const vp = page.getViewport({scale:1.5});
+    const canvas = document.createElement('canvas');
+    canvas.width=vp.width; canvas.height=vp.height;
+    await page.render({canvasContext:canvas.getContext('2d'),viewport:vp}).promise;
+    images.push(canvas.toDataURL('image/jpeg',0.8).split(',')[1]);
+  }
+  return images;
+}
+
 async function detectMediaType(file){
   const b = new Uint8Array(await file.slice(0,12).arrayBuffer());
   if(b[0]===0x89&&b[1]===0x50&&b[2]===0x4E&&b[3]===0x47) return "image/png";
@@ -823,33 +842,35 @@ function showUploadTest(mid){
         h('div',{style:{fontSize:"13px",color:"var(--inf)",fontWeight:"500"}},"AI tahlil natijalarini o'qimoqda...")
       ));
 
-      // Read file as base64
-      const base64 = await new Promise((resolve,reject)=>{
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result.split(',')[1]);
-        reader.onerror = () => reject(new Error("Fayl o'qishda xatolik"));
-        reader.readAsDataURL(file);
-      });
-
-      // Detect actual media type from file content (not extension)
+      // Detect media type from file content
       const mediaType = await detectMediaType(file);
-
-      // Build content for Claude
-      const contentBlock = mediaType==="application/pdf" ?
-        { type:"document", source:{ type:"base64", media_type:"application/pdf", data:base64 } } :
-        { type:"image", source:{ type:"base64", media_type:mediaType, data:base64 } };
 
       // Known test types for matching
       const knownTypes = D.testTypes.map(t=>({id:t.id,name:t.name,unit:t.unit,min:t.min,max:t.max}));
 
       try {
+        // PDF: render pages as images to avoid API size limits
+        let contentBlocks;
+        if(mediaType==="application/pdf"){
+          const pages = await pdfToImages(file);
+          contentBlocks = pages.map(b64=>({type:"image",source:{type:"base64",media_type:"image/jpeg",data:b64}}));
+        } else {
+          const base64 = await new Promise((resolve,reject)=>{
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result.split(',')[1]);
+            reader.onerror = () => reject(new Error("Fayl o'qishda xatolik"));
+            reader.readAsDataURL(file);
+          });
+          contentBlocks = [{type:"image",source:{type:"base64",media_type:mediaType,data:base64}}];
+        }
+
         const res = await fetch("https://api.anthropic.com/v1/messages",{
           method:"POST",
           headers:{"Content-Type":"application/json","x-api-key":cfg.aiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
           body:JSON.stringify({
             model:"claude-sonnet-4-20250514", max_tokens:2000,
             messages:[{role:"user",content:[
-              contentBlock,
+              ...contentBlocks,
               {type:"text",text:`Bu laboratoriya tahlili natijasi. Iltimos, barcha ko'rsatkichlarni o'qib, JSON formatda chiqar.
 
 Tizimdagi mavjud tahlil turlari:
@@ -1008,10 +1029,16 @@ function showUploadVisit(mid){
           const docText = await extractDocxText(file);
           messages = [{role:"user",content:[{type:"text",text:`Hujjat matni:\n\n${docText}\n\n${promptText}`}]}];
         } else {
-          const base64 = await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result.split(',')[1]); r.onerror=()=>rej(new Error("Fayl o'qishda xatolik")); r.readAsDataURL(file); });
           const mt = await detectMediaType(file);
-          const cb = mt==="application/pdf" ? {type:"document",source:{type:"base64",media_type:mt,data:base64}} : {type:"image",source:{type:"base64",media_type:mt,data:base64}};
-          messages = [{role:"user",content:[cb,{type:"text",text:promptText}]}];
+          let contentBlocks;
+          if(mt==="application/pdf"){
+            const pages = await pdfToImages(file);
+            contentBlocks = pages.map(b64=>({type:"image",source:{type:"base64",media_type:"image/jpeg",data:b64}}));
+          } else {
+            const base64 = await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result.split(',')[1]); r.onerror=()=>rej(new Error("Fayl o'qishda xatolik")); r.readAsDataURL(file); });
+            contentBlocks = [{type:"image",source:{type:"base64",media_type:mt,data:base64}}];
+          }
+          messages = [{role:"user",content:[...contentBlocks,{type:"text",text:promptText}]}];
         }
 
         const res = await fetch("https://api.anthropic.com/v1/messages",{
