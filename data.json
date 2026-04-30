@@ -517,6 +517,20 @@
       "unit": "ng/ml",
       "min": 13,
       "max": 150
+    },
+    {
+      "id": "molby0jhxms5sm",
+      "name": "Vitamin B9 (folieva kislota)",
+      "unit": "ng/ml",
+      "min": 4.2,
+      "max": 19.02
+    },
+    {
+      "id": "molby0jh94mly7",
+      "name": "Vitamin B12 (tsiankobalamin)",
+      "unit": "ng/ml",
+      "min": 160,
+      "max": 835
     }
   ],
   "doctorTypes": [
@@ -2559,6 +2573,22 @@
       "mid": "mol5ivwsspy4gi",
       "tid": "mola5ogc4tesip",
       "value": 1.47,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molby0jhvo3x4i",
+      "mid": "mol5ivwsspy4gi",
+      "tid": "molby0jhxms5sm",
+      "value": 17.8,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molby0jh0cc80c",
+      "mid": "mol5ivwsspy4gi",
+      "tid": "molby0jh94mly7",
+      "value": 77.1,
       "date": "2026-04-30",
       "note": ""
     }
