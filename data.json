@@ -97,6 +97,132 @@
       "unit": "10⁹/l",
       "min": 150,
       "max": 400
+    },
+    {
+      "id": "mola4ysq3el7qh",
+      "name": "Siydik miqdori",
+      "unit": "ml",
+      "min": null,
+      "max": null
+    },
+    {
+      "id": "mola4ysq8yk9aw",
+      "name": "Rang",
+      "unit": "",
+      "min": null,
+      "max": null
+    },
+    {
+      "id": "mola4ysq96pymo",
+      "name": "Shaffoflik",
+      "unit": "",
+      "min": null,
+      "max": null
+    },
+    {
+      "id": "mola4ysqjdrow3",
+      "name": "Urobilinogen",
+      "unit": "mkmol/l",
+      "min": null,
+      "max": 3.3
+    },
+    {
+      "id": "mola4ysql7d5wu",
+      "name": "Bilirubin",
+      "unit": "",
+      "min": null,
+      "max": null
+    },
+    {
+      "id": "mola4ysq9zscnt",
+      "name": "Keton tanalar",
+      "unit": "",
+      "min": null,
+      "max": null
+    },
+    {
+      "id": "mola4ysq4ja5tu",
+      "name": "Oqsil",
+      "unit": "%",
+      "min": null,
+      "max": 0
+    },
+    {
+      "id": "mola4ysqj08cn4",
+      "name": "Nitritlar",
+      "unit": "",
+      "min": null,
+      "max": null
+    },
+    {
+      "id": "mola4ysqmqfb58",
+      "name": "Glyukoza",
+      "unit": "mmol/sut",
+      "min": 0,
+      "max": 2.8
+    },
+    {
+      "id": "mola4ysqmvh3j7",
+      "name": "Nisbiy zichlik",
+      "unit": "",
+      "min": 1012,
+      "max": 1020
+    },
+    {
+      "id": "mola4ysqwq44q8",
+      "name": "pH",
+      "unit": "",
+      "min": 5,
+      "max": 6.5
+    },
+    {
+      "id": "mola4ysqdcpbtb",
+      "name": "Yassi epiteliy",
+      "unit": "p/zr",
+      "min": 0,
+      "max": 5
+    },
+    {
+      "id": "mola4ysqytzxb3",
+      "name": "O'tish epiteli",
+      "unit": "p/zr",
+      "min": 0,
+      "max": 5
+    },
+    {
+      "id": "mola4ysqejr55b",
+      "name": "Leykotsitlar",
+      "unit": "p/zr",
+      "min": 0,
+      "max": 5
+    },
+    {
+      "id": "mola4ysq3lenbx",
+      "name": "O'zgartirilmagan eritrotsitlar",
+      "unit": "p/zr",
+      "min": 0,
+      "max": 3
+    },
+    {
+      "id": "mola4ysrll050h",
+      "name": "Shilimshiq",
+      "unit": "",
+      "min": null,
+      "max": null
+    },
+    {
+      "id": "mola4ysr94nd9n",
+      "name": "Siydik kislotasi kristallari",
+      "unit": "",
+      "min": null,
+      "max": null
+    },
+    {
+      "id": "mola4ysr4riz6v",
+      "name": "Bakteriyalar",
+      "unit": "",
+      "min": null,
+      "max": null
     }
   ],
   "doctorTypes": [
@@ -133,6 +259,151 @@
       "name": "Oftalmolog"
     }
   ],
-  "tests": [],
+  "tests": [
+    {
+      "id": "mola4ysqdwszwh",
+      "mid": "mol5hwylt4khuz",
+      "tid": "mola4ysq3el7qh",
+      "value": 100,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "mola4ysqh7hfld",
+      "mid": "mol5hwylt4khuz",
+      "tid": "mola4ysq8yk9aw",
+      "value": null,
+      "date": "2026-04-30",
+      "note": "solomonno-sariq"
+    },
+    {
+      "id": "mola4ysqiabbmt",
+      "mid": "mol5hwylt4khuz",
+      "tid": "mola4ysq96pymo",
+      "value": null,
+      "date": "2026-04-30",
+      "note": "shaffof"
+    },
+    {
+      "id": "mola4ysqh5zqms",
+      "mid": "mol5hwylt4khuz",
+      "tid": "mola4ysqjdrow3",
+      "value": null,
+      "date": "2026-04-30",
+      "note": "abs"
+    },
+    {
+      "id": "mola4ysqm82vst",
+      "mid": "mol5hwylt4khuz",
+      "tid": "mola4ysql7d5wu",
+      "value": null,
+      "date": "2026-04-30",
+      "note": "abs"
+    },
+    {
+      "id": "mola4ysqm43yb7",
+      "mid": "mol5hwylt4khuz",
+      "tid": "mola4ysq9zscnt",
+      "value": null,
+      "date": "2026-04-30",
+      "note": "abs"
+    },
+    {
+      "id": "mola4ysq205151",
+      "mid": "mol5hwylt4khuz",
+      "tid": "mola4ysq4ja5tu",
+      "value": 0.033,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "mola4ysqsjgkmr",
+      "mid": "mol5hwylt4khuz",
+      "tid": "mola4ysqj08cn4",
+      "value": null,
+      "date": "2026-04-30",
+      "note": "abs"
+    },
+    {
+      "id": "mola4ysq2wf46r",
+      "mid": "mol5hwylt4khuz",
+      "tid": "mola4ysqmqfb58",
+      "value": null,
+      "date": "2026-04-30",
+      "note": "abs"
+    },
+    {
+      "id": "mola4ysqbue046",
+      "mid": "mol5hwylt4khuz",
+      "tid": "mola4ysqmvh3j7",
+      "value": 1020,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "mola4ysqxrzmto",
+      "mid": "mol5hwylt4khuz",
+      "tid": "mola4ysqwq44q8",
+      "value": 5,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "mola4ysqux89ck",
+      "mid": "mol5hwylt4khuz",
+      "tid": "mola4ysqdcpbtb",
+      "value": 12.5,
+      "date": "2026-04-30",
+      "note": "12-13"
+    },
+    {
+      "id": "mola4ysqb6mowo",
+      "mid": "mol5hwylt4khuz",
+      "tid": "mola4ysqytzxb3",
+      "value": 1.5,
+      "date": "2026-04-30",
+      "note": "1-2"
+    },
+    {
+      "id": "mola4ysq4ujybv",
+      "mid": "mol5hwylt4khuz",
+      "tid": "mola4ysqejr55b",
+      "value": 16.5,
+      "date": "2026-04-30",
+      "note": "15-18"
+    },
+    {
+      "id": "mola4ysqz1o17s",
+      "mid": "mol5hwylt4khuz",
+      "tid": "mola4ysq3lenbx",
+      "value": 5.5,
+      "date": "2026-04-30",
+      "note": "5-6"
+    },
+    {
+      "id": "mola4ysrqjh79j",
+      "mid": "mol5hwylt4khuz",
+      "tid": "mola4ysrll050h",
+      "value": null,
+      "date": "2026-04-30",
+      "note": "+++"
+    },
+    {
+      "id": "mola4ysr2lj6if",
+      "mid": "mol5hwylt4khuz",
+      "tid": "mola4ysr94nd9n",
+      "value": null,
+      "date": "2026-04-30",
+      "note": "++"
+    },
+    {
+      "id": "mola4ysrtaeasi",
+      "mid": "mol5hwylt4khuz",
+      "tid": "mola4ysr4riz6v",
+      "value": null,
+      "date": "2026-04-30",
+      "note": "++"
+    }
+  ],
   "visits": []
 }
