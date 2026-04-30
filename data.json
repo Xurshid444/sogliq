@@ -1,5 +1,12 @@
 {
-  "members": [],
+  "members": [
+    {
+      "id": "mol5hwylt4khuz",
+      "name": "Umida",
+      "birthYear": 1972,
+      "gender": "Ayol"
+    }
+  ],
   "testTypes": [
     {
       "id": "t1",
