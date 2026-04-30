@@ -182,6 +182,21 @@ async function saveData(){
 }
 
 /* ═══ Helpers ═══ */
+async function detectMediaType(file){
+  const b = new Uint8Array(await file.slice(0,12).arrayBuffer());
+  if(b[0]===0x89&&b[1]===0x50&&b[2]===0x4E&&b[3]===0x47) return "image/png";
+  if(b[0]===0xFF&&b[1]===0xD8&&b[2]===0xFF) return "image/jpeg";
+  if(b[0]===0x47&&b[1]===0x49&&b[2]===0x46) return "image/gif";
+  if(b[0]===0x52&&b[1]===0x49&&b[2]===0x46&&b[3]===0x46&&b[8]===0x57&&b[9]===0x45&&b[10]===0x42&&b[11]===0x50) return "image/webp";
+  if(b[0]===0x25&&b[1]===0x50&&b[2]===0x44&&b[3]===0x46) return "application/pdf";
+  const ext=file.name.split('.').pop().toLowerCase();
+  if(ext==="png") return "image/png";
+  if(ext==="webp") return "image/webp";
+  if(ext==="gif") return "image/gif";
+  if(ext==="pdf") return "application/pdf";
+  return "image/jpeg";
+}
+
 const getMember = id => D.members.find(m=>m.id===id);
 const getTest = id => D.testTypes.find(t=>t.id===id);
 const getDoc = id => D.doctorTypes.find(d=>d.id===id);
@@ -816,15 +831,11 @@ function showUploadTest(mid){
         reader.readAsDataURL(file);
       });
 
-      // Determine media type
-      let mediaType = "image/jpeg";
-      if(ext==="png") mediaType="image/png";
-      else if(ext==="webp") mediaType="image/webp";
-      else if(ext==="gif") mediaType="image/gif";
-      else if(ext==="pdf") mediaType="application/pdf";
+      // Detect actual media type from file content (not extension)
+      const mediaType = await detectMediaType(file);
 
       // Build content for Claude
-      const contentBlock = ext==="pdf" ?
+      const contentBlock = mediaType==="application/pdf" ?
         { type:"document", source:{ type:"base64", media_type:"application/pdf", data:base64 } } :
         { type:"image", source:{ type:"base64", media_type:mediaType, data:base64 } };
 
@@ -998,12 +1009,8 @@ function showUploadVisit(mid){
           messages = [{role:"user",content:[{type:"text",text:`Hujjat matni:\n\n${docText}\n\n${promptText}`}]}];
         } else {
           const base64 = await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result.split(',')[1]); r.onerror=()=>rej(new Error("Fayl o'qishda xatolik")); r.readAsDataURL(file); });
-          let mt="image/jpeg";
-          if(ext==="png") mt="image/png";
-          else if(ext==="webp") mt="image/webp";
-          else if(ext==="gif") mt="image/gif";
-          else if(ext==="pdf") mt="application/pdf";
-          const cb = ext==="pdf" ? {type:"document",source:{type:"base64",media_type:mt,data:base64}} : {type:"image",source:{type:"base64",media_type:mt,data:base64}};
+          const mt = await detectMediaType(file);
+          const cb = mt==="application/pdf" ? {type:"document",source:{type:"base64",media_type:mt,data:base64}} : {type:"image",source:{type:"base64",media_type:mt,data:base64}};
           messages = [{role:"user",content:[cb,{type:"text",text:promptText}]}];
         }
 
