@@ -559,6 +559,41 @@
       "unit": "шт",
       "min": null,
       "max": null
+    },
+    {
+      "id": "molc15b9y69f25",
+      "name": "Indikator tsveta (COLOR_IDX)",
+      "unit": "",
+      "min": 0.85,
+      "max": 1.15
+    },
+    {
+      "id": "molc15b9rfoyvc",
+      "name": "Fosfor",
+      "unit": "mmol/l",
+      "min": 4,
+      "max": 7
+    },
+    {
+      "id": "molc15b9ho3qgx",
+      "name": "Kaliy",
+      "unit": "mmol/l",
+      "min": 3.6,
+      "max": 5.4
+    },
+    {
+      "id": "molc15b9v91ih6",
+      "name": "Magniy",
+      "unit": "mmol/l",
+      "min": 0.66,
+      "max": 1.07
+    },
+    {
+      "id": "molc15b9w8qh98",
+      "name": "Immunoglobulin E - IgE",
+      "unit": "IU/ml",
+      "min": 0,
+      "max": 200
     }
   ],
   "doctorTypes": [
@@ -3627,6 +3662,150 @@
       "value": "+",
       "date": "2026-04-30",
       "note": ""
+    },
+    {
+      "id": "molc15b9cdclig",
+      "mid": "mol5je7wtbgkgs",
+      "tid": "t2",
+      "value": 110,
+      "date": "2026-04-30",
+      "note": "past"
+    },
+    {
+      "id": "molc15b9dwv5dv",
+      "mid": "mol5je7wtbgkgs",
+      "tid": "molc15b9y69f25",
+      "value": 0.8,
+      "date": "2026-04-30",
+      "note": "past"
+    },
+    {
+      "id": "molc15b9ntzrvb",
+      "mid": "mol5je7wtbgkgs",
+      "tid": "t5",
+      "value": 3.9,
+      "date": "2026-04-30",
+      "note": "past"
+    },
+    {
+      "id": "molc15b9vred9l",
+      "mid": "mol5je7wtbgkgs",
+      "tid": "mola5ogc66pm3i",
+      "value": 38.9,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molc15b9izqmj7",
+      "mid": "mol5je7wtbgkgs",
+      "tid": "t6",
+      "value": 310,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molc15b9yq1kad",
+      "mid": "mol5je7wtbgkgs",
+      "tid": "t4",
+      "value": 5.7,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molc15b9yo594q",
+      "mid": "mol5je7wtbgkgs",
+      "tid": "mola5ogcjdtaab",
+      "value": 6,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molc15b9gzsxsa",
+      "mid": "mol5je7wtbgkgs",
+      "tid": "mola5ogcu9vkdp",
+      "value": 1,
+      "date": "2026-04-30",
+      "note": "past"
+    },
+    {
+      "id": "molc15b9v7k4gs",
+      "mid": "mol5je7wtbgkgs",
+      "tid": "mola5ogcz7f21s",
+      "value": 52,
+      "date": "2026-04-30",
+      "note": "yuqori"
+    },
+    {
+      "id": "molc15b951wa8k",
+      "mid": "mol5je7wtbgkgs",
+      "tid": "mola5ogcq7lfb2",
+      "value": 38,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molc15b9t2s56v",
+      "mid": "mol5je7wtbgkgs",
+      "tid": "mola5ogc143i9p",
+      "value": 3,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molc15b95y9a33",
+      "mid": "mol5je7wtbgkgs",
+      "tid": "mola5ogco7cdk0",
+      "value": 6,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molc15b9ko8gih",
+      "mid": "mol5je7wtbgkgs",
+      "tid": "molbzwdoio8qdd",
+      "value": 1.6,
+      "date": "2026-04-30",
+      "note": "past"
+    },
+    {
+      "id": "molc15b9is5lso",
+      "mid": "mol5je7wtbgkgs",
+      "tid": "molc15b9rfoyvc",
+      "value": 4,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molc15b9gzsb5x",
+      "mid": "mol5je7wtbgkgs",
+      "tid": "molc15b9ho3qgx",
+      "value": 3.8,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molc15b9tfhq5l",
+      "mid": "mol5je7wtbgkgs",
+      "tid": "molc15b9v91ih6",
+      "value": 0.68,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molc15b9uo5ukc",
+      "mid": "mol5je7wtbgkgs",
+      "tid": "molc15b9w8qh98",
+      "value": 65.3,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molc15b920s7tn",
+      "mid": "mol5je7wtbgkgs",
+      "tid": "molbzwdou7twbv",
+      "value": 24.3,
+      "date": "2026-04-30",
+      "note": "past"
     }
   ],
   "visits": [
