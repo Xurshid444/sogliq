@@ -3806,6 +3806,198 @@
       "value": 24.3,
       "date": "2026-04-30",
       "note": "past"
+    },
+    {
+      "id": "molc2e2uagp9fu",
+      "mid": "mol5jmmay4lo4d",
+      "tid": "t4",
+      "value": 10.36,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molc2e2upihnh5",
+      "mid": "mol5jmmay4lo4d",
+      "tid": "mola5ogcz7f21s",
+      "value": 3.06,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molc2e2uil442n",
+      "mid": "mol5jmmay4lo4d",
+      "tid": "mola5ogc1by1jc",
+      "value": 6.12,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molc2e2ukz8n78",
+      "mid": "mol5jmmay4lo4d",
+      "tid": "mola5ogc3uyc2n",
+      "value": 0.92,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molc2e2uw1awa3",
+      "mid": "mol5jmmay4lo4d",
+      "tid": "mola5ogc32n6zl",
+      "value": 0.26,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molc2e2ugkbwi6",
+      "mid": "mol5jmmay4lo4d",
+      "tid": "mola5ogc2g48cl",
+      "value": 0.01,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molc2e2u2oaoec",
+      "mid": "mol5jmmay4lo4d",
+      "tid": "mola5ogcu9vkdp",
+      "value": 29.5,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molc2e2u9dupj5",
+      "mid": "mol5jmmay4lo4d",
+      "tid": "mola5ogcq7lfb2",
+      "value": 59,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molc2e2ukifdpj",
+      "mid": "mol5jmmay4lo4d",
+      "tid": "mola5ogc143i9p",
+      "value": 9,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molc2e2uqjrrrh",
+      "mid": "mol5jmmay4lo4d",
+      "tid": "mola5ogcjdtaab",
+      "value": 2.5,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molc2e2ujenbcu",
+      "mid": "mol5jmmay4lo4d",
+      "tid": "mola5ogcripu47",
+      "value": 0.01,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molc2e2u2ml30h",
+      "mid": "mol5jmmay4lo4d",
+      "tid": "t5",
+      "value": 3.9,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molc2e2ukto8mx",
+      "mid": "mol5jmmay4lo4d",
+      "tid": "t2",
+      "value": 105,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molc2e2ujvzvew",
+      "mid": "mol5jmmay4lo4d",
+      "tid": "mola5ogc66pm3i",
+      "value": 31.1,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molc2e2uz54z3a",
+      "mid": "mol5jmmay4lo4d",
+      "tid": "mola5ogczdxr20",
+      "value": 79.8,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molc2e2uqu38as",
+      "mid": "mol5jmmay4lo4d",
+      "tid": "mola5ogca27dfh",
+      "value": 26.9,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molc2e2uktewkv",
+      "mid": "mol5jmmay4lo4d",
+      "tid": "mola5ogcswp76m",
+      "value": 337,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molc2e2uis1kfo",
+      "mid": "mol5jmmay4lo4d",
+      "tid": "mola5ogc8ob4h0",
+      "value": 13.1,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molc2e2ublj7nc",
+      "mid": "mol5jmmay4lo4d",
+      "tid": "mola5ogcrglfpy",
+      "value": 40.5,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molc2e2unobxnf",
+      "mid": "mol5jmmay4lo4d",
+      "tid": "t6",
+      "value": 329,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molc2e2uupmug2",
+      "mid": "mol5jmmay4lo4d",
+      "tid": "mola5ogca0ili2",
+      "value": 10.6,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molc2e2u9cdzjo",
+      "mid": "mol5jmmay4lo4d",
+      "tid": "mola5ogcgl14qn",
+      "value": 16.6,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molc2e2uhe4dok",
+      "mid": "mol5jmmay4lo4d",
+      "tid": "mola5ogcmjp647",
+      "value": 0.35,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molc2e2u1gr954",
+      "mid": "mol5jmmay4lo4d",
+      "tid": "mola5ogco7cdk0",
+      "value": 19,
+      "date": "2026-04-30",
+      "note": ""
     }
   ],
   "visits": [
