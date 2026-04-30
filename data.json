@@ -17,6 +17,12 @@
       "name": "Xurshiddin",
       "birthYear": 1994,
       "gender": "Erkak"
+    },
+    {
+      "id": "mol5io9gye9zn0",
+      "name": "Munojat",
+      "birthYear": 1996,
+      "gender": "Ayol"
     }
   ],
   "testTypes": [
