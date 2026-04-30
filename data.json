@@ -47,6 +47,12 @@
       "name": "Muhammadamin",
       "birthYear": 2023,
       "gender": "Erkak"
+    },
+    {
+      "id": "mol5js7qe7o92q",
+      "name": "Asmo",
+      "birthYear": 2023,
+      "gender": "Ayol"
     }
   ],
   "testTypes": [
