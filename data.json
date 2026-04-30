@@ -531,6 +531,13 @@
       "unit": "ng/ml",
       "min": 160,
       "max": 835
+    },
+    {
+      "id": "molbyhhpi6uy7v",
+      "name": "Бўйрак эпители",
+      "unit": "",
+      "min": null,
+      "max": null
     }
   ],
   "doctorTypes": [
@@ -2589,6 +2596,270 @@
       "mid": "mol5ivwsspy4gi",
       "tid": "molby0jh94mly7",
       "value": 77.1,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbyhhpprmnrd",
+      "mid": "mol5ivwsspy4gi",
+      "tid": "mola4ysq3el7qh",
+      "value": 60,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbyhhpj1wbkh",
+      "mid": "mol5ivwsspy4gi",
+      "tid": "mola4ysq8yk9aw",
+      "value": "соломенно-жёлтый",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbyhhpgbw0m9",
+      "mid": "mol5ivwsspy4gi",
+      "tid": "mola4ysq96pymo",
+      "value": "прозрачная",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbyhhphnypio",
+      "mid": "mol5ivwsspy4gi",
+      "tid": "mola4ysqjdrow3",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbyhhphbay7c",
+      "mid": "mol5ivwsspy4gi",
+      "tid": "mola4ysql7d5wu",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbyhhpc40no7",
+      "mid": "mol5ivwsspy4gi",
+      "tid": "mola4ysq9zscnt",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbyhhp4t4809",
+      "mid": "mol5ivwsspy4gi",
+      "tid": "mola4ysq4ja5tu",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbyhhpmn76dp",
+      "mid": "mol5ivwsspy4gi",
+      "tid": "mola4ysqj08cn4",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbyhhpvrvybv",
+      "mid": "mol5ivwsspy4gi",
+      "tid": "mola4ysqmqfb58",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbyhhprit1la",
+      "mid": "mol5ivwsspy4gi",
+      "tid": "mola4ysqmvh3j7",
+      "value": 1025,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbyhhpxld0n6",
+      "mid": "mol5ivwsspy4gi",
+      "tid": "mola4ysqwq44q8",
+      "value": 6,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbyhhposc8nm",
+      "mid": "mol5ivwsspy4gi",
+      "tid": "mola4ysqdcpbtb",
+      "value": "2-3",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbyhhpeoq8q9",
+      "mid": "mol5ivwsspy4gi",
+      "tid": "mola4ysqytzxb3",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbyhhpnb5iis",
+      "mid": "mol5ivwsspy4gi",
+      "tid": "molbyhhpi6uy7v",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbyhhpcez5za",
+      "mid": "mol5ivwsspy4gi",
+      "tid": "mola4ysqejr55b",
+      "value": "5-6",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbyhhp2o5mov",
+      "mid": "mol5ivwsspy4gi",
+      "tid": "mola4ysq3lenbx",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbyhhp8aitux",
+      "mid": "mol5ivwsspy4gi",
+      "tid": "molbunph8i29g3",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbyhhp9gk76f",
+      "mid": "mol5ivwsspy4gi",
+      "tid": "molbunph9wwx67",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbyhhph0ss1c",
+      "mid": "mol5ivwsspy4gi",
+      "tid": "molbunph3n0hb0",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbyhhpqbd2vn",
+      "mid": "mol5ivwsspy4gi",
+      "tid": "molbunphy13mx2",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbyhhpio1rzr",
+      "mid": "mol5ivwsspy4gi",
+      "tid": "molbunph33ztwm",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbyhhpw8tail",
+      "mid": "mol5ivwsspy4gi",
+      "tid": "molbunph0erns7",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbyhhp9ving9",
+      "mid": "mol5ivwsspy4gi",
+      "tid": "molbunphmqn3xw",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbyhhpmtvlwx",
+      "mid": "mol5ivwsspy4gi",
+      "tid": "mola4ysr94nd9n",
+      "value": "++",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbyhhp7sjqnw",
+      "mid": "mol5ivwsspy4gi",
+      "tid": "mola4ysr4riz6v",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbyhhp1x71ft",
+      "mid": "mol5ivwsspy4gi",
+      "tid": "molbunphygp873",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbyhhpc4k8mv",
+      "mid": "mol5ivwsspy4gi",
+      "tid": "molbvuat0s5s49",
+      "value": "+",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbyhhp1ycz02",
+      "mid": "mol5ivwsspy4gi",
+      "tid": "molbvuatqhteoz",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbyhhp0knb59",
+      "mid": "mol5ivwsspy4gi",
+      "tid": "molbvuatyp09d8",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbyhhpydi9i0",
+      "mid": "mol5ivwsspy4gi",
+      "tid": "molbvuatjt29ry",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbyhhpu9yc2k",
+      "mid": "mol5ivwsspy4gi",
+      "tid": "molbvuatni6vjs",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbyhhp2shh62",
+      "mid": "mol5ivwsspy4gi",
+      "tid": "molbvuat5qge40",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbyhhps8enmb",
+      "mid": "mol5ivwsspy4gi",
+      "tid": "molbvuat7zmlz7",
+      "value": "abs",
       "date": "2026-04-30",
       "note": ""
     }
