@@ -398,6 +398,62 @@
       "unit": "mkME/ml",
       "min": 0.3,
       "max": 5
+    },
+    {
+      "id": "molbunph8i29g3",
+      "name": "O'zgartirilgan eritrotsitlar",
+      "unit": "p/zr",
+      "min": 0,
+      "max": 1
+    },
+    {
+      "id": "molbunph9wwx67",
+      "name": "Gialinli tsilindirlar",
+      "unit": "",
+      "min": null,
+      "max": null
+    },
+    {
+      "id": "molbunph3n0hb0",
+      "name": "Donador tsilindirlar",
+      "unit": "",
+      "min": null,
+      "max": null
+    },
+    {
+      "id": "molbunphy13mx2",
+      "name": "Mum tsilindirlar",
+      "unit": "",
+      "min": null,
+      "max": null
+    },
+    {
+      "id": "molbunph33ztwm",
+      "name": "Eritrotsitli tsilindirlar",
+      "unit": "",
+      "min": null,
+      "max": null
+    },
+    {
+      "id": "molbunph0erns7",
+      "name": "Yog'li tsilindirlar",
+      "unit": "",
+      "min": null,
+      "max": null
+    },
+    {
+      "id": "molbunphmqn3xw",
+      "name": "Leykotsitli tsilindirlar",
+      "unit": "",
+      "min": null,
+      "max": null
+    },
+    {
+      "id": "molbunphygp873",
+      "name": "Oksalatlar",
+      "unit": "",
+      "min": null,
+      "max": null
     }
   ],
   "doctorTypes": [
@@ -1056,6 +1112,206 @@
       "mid": "mol5i93yaljymv",
       "tid": "t3",
       "value": 4,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbunph8ni3va",
+      "mid": "mol5i93yaljymv",
+      "tid": "mola4ysq3el7qh",
+      "value": 100,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbunphd5sp2z",
+      "mid": "mol5i93yaljymv",
+      "tid": "mola4ysq8yk9aw",
+      "value": "соломенно-жёлтый",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbunpheft0yu",
+      "mid": "mol5i93yaljymv",
+      "tid": "mola4ysq96pymo",
+      "value": "прозрачная",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbunphabof8q",
+      "mid": "mol5i93yaljymv",
+      "tid": "mola4ysqjdrow3",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbunphhx8bbf",
+      "mid": "mol5i93yaljymv",
+      "tid": "mola4ysql7d5wu",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbunph2kvme1",
+      "mid": "mol5i93yaljymv",
+      "tid": "mola4ysq9zscnt",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbunph64klit",
+      "mid": "mol5i93yaljymv",
+      "tid": "mola4ysq4ja5tu",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbunpho0vwkj",
+      "mid": "mol5i93yaljymv",
+      "tid": "mola4ysqj08cn4",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbunphosj1p4",
+      "mid": "mol5i93yaljymv",
+      "tid": "mola4ysqmqfb58",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbunph3afsxp",
+      "mid": "mol5i93yaljymv",
+      "tid": "mola4ysqmvh3j7",
+      "value": 1025,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbunphpy8xaz",
+      "mid": "mol5i93yaljymv",
+      "tid": "mola4ysqwq44q8",
+      "value": 5.5,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbunph9jjiu7",
+      "mid": "mol5i93yaljymv",
+      "tid": "mola4ysqdcpbtb",
+      "value": "0-1",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbunphm05ki4",
+      "mid": "mol5i93yaljymv",
+      "tid": "mola4ysqytzxb3",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbunphv0fw8j",
+      "mid": "mol5i93yaljymv",
+      "tid": "mola4ysqejr55b",
+      "value": "2-3",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbunphozjyje",
+      "mid": "mol5i93yaljymv",
+      "tid": "mola4ysq3lenbx",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbunph6xn4sa",
+      "mid": "mol5i93yaljymv",
+      "tid": "molbunph8i29g3",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbunphdkg5if",
+      "mid": "mol5i93yaljymv",
+      "tid": "molbunph9wwx67",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbunphb5gsbr",
+      "mid": "mol5i93yaljymv",
+      "tid": "molbunph3n0hb0",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbunph15mt4h",
+      "mid": "mol5i93yaljymv",
+      "tid": "molbunphy13mx2",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbunph3130nn",
+      "mid": "mol5i93yaljymv",
+      "tid": "molbunph33ztwm",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbunph3tj877",
+      "mid": "mol5i93yaljymv",
+      "tid": "molbunph0erns7",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbunph97xh90",
+      "mid": "mol5i93yaljymv",
+      "tid": "molbunphmqn3xw",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbunph2uphnb",
+      "mid": "mol5i93yaljymv",
+      "tid": "mola4ysr94nd9n",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbunphbsmvzp",
+      "mid": "mol5i93yaljymv",
+      "tid": "molbunphygp873",
+      "value": "+",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbunph6jhidn",
+      "mid": "mol5i93yaljymv",
+      "tid": "mola4ysr4riz6v",
+      "value": "abs",
       "date": "2026-04-30",
       "note": ""
     }
