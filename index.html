@@ -987,7 +987,7 @@ function showUploadVisit(mid){
       if(!validImg.includes(ext)&&!validPdf.includes(ext)&&!validDoc.includes(ext)){
         toast("Faqat JPG, PNG, PDF yoki DOCX yuklang","error"); return;
       }
-      if(file.size>20*1024*1024){ toast("Fayl 20MB dan kichik bo'lishi kerak","error"); return; }
+      if(file.size>50*1024*1024){ toast("Fayl 50MB dan kichik bo'lishi kerak","error"); return; }
 
       fileLabel.innerHTML='';
       fileLabel.append(h('div',{style:{fontSize:"14px",fontWeight:"600",color:"var(--ac)"}},"✓ "+file.name));
