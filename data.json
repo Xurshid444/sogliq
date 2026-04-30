@@ -223,6 +223,181 @@
       "unit": "",
       "min": null,
       "max": null
+    },
+    {
+      "id": "mola5ogcz7f21s",
+      "name": "Neytrofillar (Neu#)",
+      "unit": "10⁹/l",
+      "min": 2,
+      "max": 7.8
+    },
+    {
+      "id": "mola5ogc1by1jc",
+      "name": "Limfotsitlar (Lymph#)",
+      "unit": "10⁹/l",
+      "min": 0.8,
+      "max": 4
+    },
+    {
+      "id": "mola5ogc3uyc2n",
+      "name": "Monotsitlar (Mon#)",
+      "unit": "10⁹/l",
+      "min": 0.12,
+      "max": 1.2
+    },
+    {
+      "id": "mola5ogc32n6zl",
+      "name": "Eozinofillar (Eos#)",
+      "unit": "10⁹/l",
+      "min": 0.02,
+      "max": 0.5
+    },
+    {
+      "id": "mola5ogc2g48cl",
+      "name": "Bazofillar (Bas#)",
+      "unit": "10⁹/l",
+      "min": 0.09,
+      "max": 0.1
+    },
+    {
+      "id": "mola5ogcu9vkdp",
+      "name": "Neytrofillar foizi",
+      "unit": "%",
+      "min": 44,
+      "max": 70
+    },
+    {
+      "id": "mola5ogcq7lfb2",
+      "name": "Limfotsitlar foizi",
+      "unit": "%",
+      "min": 19,
+      "max": 37
+    },
+    {
+      "id": "mola5ogc143i9p",
+      "name": "Monotsitlar foizi",
+      "unit": "%",
+      "min": 4,
+      "max": 11
+    },
+    {
+      "id": "mola5ogcjdtaab",
+      "name": "Eozinofillar foizi",
+      "unit": "%",
+      "min": 0,
+      "max": 5
+    },
+    {
+      "id": "mola5ogcripu47",
+      "name": "Bazofillar foizi",
+      "unit": "%",
+      "min": 0,
+      "max": 2
+    },
+    {
+      "id": "mola5ogc66pm3i",
+      "name": "Gematokrit (HCT)",
+      "unit": "%",
+      "min": 37,
+      "max": 54
+    },
+    {
+      "id": "mola5ogczdxr20",
+      "name": "O'rtacha eritrotsit hajmi (MCV)",
+      "unit": "fl",
+      "min": 80,
+      "max": 100
+    },
+    {
+      "id": "mola5ogca27dfh",
+      "name": "Eritrotsitdagi gemoglobin (MCH)",
+      "unit": "pg",
+      "min": 27,
+      "max": 34
+    },
+    {
+      "id": "mola5ogcswp76m",
+      "name": "Gemoglobin konsentratsiyasi (MCHC)",
+      "unit": "g/l",
+      "min": 320,
+      "max": 360
+    },
+    {
+      "id": "mola5ogc8ob4h0",
+      "name": "RDW-CV",
+      "unit": "%",
+      "min": 11,
+      "max": 16
+    },
+    {
+      "id": "mola5ogcrglfpy",
+      "name": "RDW-SD",
+      "unit": "%",
+      "min": 35,
+      "max": 56
+    },
+    {
+      "id": "mola5ogca0ili2",
+      "name": "O'rtacha trombotsit hajmi (MPV)",
+      "unit": "fl",
+      "min": 7,
+      "max": 12
+    },
+    {
+      "id": "mola5ogcgl14qn",
+      "name": "PDW",
+      "unit": "%",
+      "min": 9,
+      "max": 17
+    },
+    {
+      "id": "mola5ogcmjp647",
+      "name": "Trombokrit (PCT)",
+      "unit": "%",
+      "min": 0.108,
+      "max": 0.282
+    },
+    {
+      "id": "mola5ogco7cdk0",
+      "name": "ESR",
+      "unit": "mm/soat",
+      "min": 0,
+      "max": 15
+    },
+    {
+      "id": "mola5ogcjuejit",
+      "name": "ALT",
+      "unit": "Ed/ml",
+      "min": 0,
+      "max": 40
+    },
+    {
+      "id": "mola5ogcwsfzu6",
+      "name": "AST",
+      "unit": "Ed/ml",
+      "min": 0,
+      "max": 38
+    },
+    {
+      "id": "mola5ogcgcya3w",
+      "name": "Kreatinin",
+      "unit": "mkmol/l",
+      "min": 53,
+      "max": 123.7
+    },
+    {
+      "id": "mola5ogcpx07gs",
+      "name": "Glikolizatsiyalangan gemoglobin",
+      "unit": "%",
+      "min": 0,
+      "max": 6.5
+    },
+    {
+      "id": "mola5ogc4tesip",
+      "name": "TTG",
+      "unit": "mkME/ml",
+      "min": 0.3,
+      "max": 5
     }
   ],
   "doctorTypes": [
@@ -403,6 +578,254 @@
       "value": null,
       "date": "2026-04-30",
       "note": "++"
+    },
+    {
+      "id": "mola5ogb6mtidz",
+      "mid": "mol5hwylt4khuz",
+      "tid": "t4",
+      "value": 8.57,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "mola5ogc9z0wb0",
+      "mid": "mol5hwylt4khuz",
+      "tid": "mola5ogcz7f21s",
+      "value": 5.03,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "mola5ogcytorsr",
+      "mid": "mol5hwylt4khuz",
+      "tid": "mola5ogc1by1jc",
+      "value": 2.96,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "mola5ogcgspotf",
+      "mid": "mol5hwylt4khuz",
+      "tid": "mola5ogc3uyc2n",
+      "value": 0.51,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "mola5ogcx3mmb5",
+      "mid": "mol5hwylt4khuz",
+      "tid": "mola5ogc32n6zl",
+      "value": 0.07,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "mola5ogc9xrzap",
+      "mid": "mol5hwylt4khuz",
+      "tid": "mola5ogc2g48cl",
+      "value": 0.01,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "mola5ogcf7tao8",
+      "mid": "mol5hwylt4khuz",
+      "tid": "mola5ogcu9vkdp",
+      "value": 58.7,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "mola5ogcy6ztgl",
+      "mid": "mol5hwylt4khuz",
+      "tid": "mola5ogcq7lfb2",
+      "value": 34.5,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "mola5ogc6u2yhe",
+      "mid": "mol5hwylt4khuz",
+      "tid": "mola5ogc143i9p",
+      "value": 6,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "mola5ogce94084",
+      "mid": "mol5hwylt4khuz",
+      "tid": "mola5ogcjdtaab",
+      "value": 0.8,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "mola5ogcqlfeiw",
+      "mid": "mol5hwylt4khuz",
+      "tid": "mola5ogcripu47",
+      "value": 0.01,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "mola5ogcmsxo9n",
+      "mid": "mol5hwylt4khuz",
+      "tid": "t5",
+      "value": 4.25,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "mola5ogcjmxfrj",
+      "mid": "mol5hwylt4khuz",
+      "tid": "t2",
+      "value": 122,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "mola5ogcmlnkjq",
+      "mid": "mol5hwylt4khuz",
+      "tid": "mola5ogc66pm3i",
+      "value": 38.3,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "mola5ogcb9tl80",
+      "mid": "mol5hwylt4khuz",
+      "tid": "mola5ogczdxr20",
+      "value": 90.3,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "mola5ogc39hwdg",
+      "mid": "mol5hwylt4khuz",
+      "tid": "mola5ogca27dfh",
+      "value": 30.4,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "mola5ogc3ou5v2",
+      "mid": "mol5hwylt4khuz",
+      "tid": "mola5ogcswp76m",
+      "value": 336,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "mola5ogcowdxrj",
+      "mid": "mol5hwylt4khuz",
+      "tid": "mola5ogc8ob4h0",
+      "value": 12.4,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "mola5ogchg6axo",
+      "mid": "mol5hwylt4khuz",
+      "tid": "mola5ogcrglfpy",
+      "value": 44.1,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "mola5ogc4yz759",
+      "mid": "mol5hwylt4khuz",
+      "tid": "t6",
+      "value": 362,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "mola5ogc0dch4s",
+      "mid": "mol5hwylt4khuz",
+      "tid": "mola5ogca0ili2",
+      "value": 8.3,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "mola5ogc9gpm9j",
+      "mid": "mol5hwylt4khuz",
+      "tid": "mola5ogcgl14qn",
+      "value": 15.5,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "mola5ogcqaptbi",
+      "mid": "mol5hwylt4khuz",
+      "tid": "mola5ogcmjp647",
+      "value": 0.3,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "mola5ogcrmg4la",
+      "mid": "mol5hwylt4khuz",
+      "tid": "mola5ogco7cdk0",
+      "value": 10,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "mola5ogc3t5gvs",
+      "mid": "mol5hwylt4khuz",
+      "tid": "t1",
+      "value": 5.7,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "mola5ogcpkhpkx",
+      "mid": "mol5hwylt4khuz",
+      "tid": "mola5ogcjuejit",
+      "value": 17,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "mola5ogcbyiuqc",
+      "mid": "mol5hwylt4khuz",
+      "tid": "mola5ogcwsfzu6",
+      "value": 20,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "mola5ogci42mbv",
+      "mid": "mol5hwylt4khuz",
+      "tid": "mola5ogcgcya3w",
+      "value": 99,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "mola5ogci457pn",
+      "mid": "mol5hwylt4khuz",
+      "tid": "mola5ogcpx07gs",
+      "value": 6.3,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "mola5ogcen2rx2",
+      "mid": "mol5hwylt4khuz",
+      "tid": "t3",
+      "value": 4.61,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "mola5ogcyye1df",
+      "mid": "mol5hwylt4khuz",
+      "tid": "mola5ogc4tesip",
+      "value": 2.741,
+      "date": "2026-04-30",
+      "note": ""
     }
   ],
   "visits": []
