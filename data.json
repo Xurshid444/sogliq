@@ -11,6 +11,12 @@
       "name": "Jamshiddin",
       "birthYear": 1993,
       "gender": "Erkak"
+    },
+    {
+      "id": "mol5igu8p2x7gz",
+      "name": "Xurshiddin",
+      "birthYear": 1994,
+      "gender": "Erkak"
     }
   ],
   "testTypes": [
