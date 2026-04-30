@@ -538,6 +538,20 @@
       "unit": "",
       "min": null,
       "max": null
+    },
+    {
+      "id": "molbzwdou7twbv",
+      "name": "Kalsiy (Ca)",
+      "unit": "mmol/l",
+      "min": 1.9,
+      "max": 2.75
+    },
+    {
+      "id": "molbzwdoio8qdd",
+      "name": "Vitamin D",
+      "unit": "ng/ml",
+      "min": 30,
+      "max": 100
     }
   ],
   "doctorTypes": [
@@ -3318,6 +3332,22 @@
       "value": "abs",
       "date": "2026-04-30",
       "note": ""
+    },
+    {
+      "id": "molbzwdowytu0u",
+      "mid": "mol5j5d81mymtr",
+      "tid": "molbzwdou7twbv",
+      "value": 2.21,
+      "date": "2026-04-30",
+      "note": "Ребенок до 1 мес:1.9-2.6, Дети 1 мес-14 лет:2.1-2.75, Взрослые 2.15-2.55"
+    },
+    {
+      "id": "molbzwdosyxitn",
+      "mid": "mol5j5d81mymtr",
+      "tid": "molbzwdoio8qdd",
+      "value": 28,
+      "date": "2026-04-30",
+      "note": "выраженный дефицит: 0-20, умеренный дефицит: 20-30, достаточный уровень: 30-100, возможный токсический эффект. Ориентировочные референсные значения, полученные для северно-европейской > 100"
     }
   ],
   "visits": [
