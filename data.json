@@ -41,6 +41,12 @@
       "name": "Zubayr",
       "birthYear": 2021,
       "gender": "Erkak"
+    },
+    {
+      "id": "mol5jmmay4lo4d",
+      "name": "Muhammadamin",
+      "birthYear": 2023,
+      "gender": "Erkak"
     }
   ],
   "testTypes": [
