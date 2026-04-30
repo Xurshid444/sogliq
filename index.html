@@ -1280,6 +1280,19 @@ function showSettings(){
     modal.append(dtDiv);
     modal.append(h('div',{style:{marginBottom:"16px"}},btn("+ Shifokor turi",()=>{close();showAddDocType();},{outline:true,small:true})));
 
+    // Share link
+    const shareUrl = `${location.origin}${location.pathname}?o=${cfg.owner}&r=${cfg.repo}&t=${cfg.token}`;
+    const shareCard = h('div',{style:{background:"var(--acl)",borderRadius:"var(--r)",padding:"12px 14px",marginBottom:"14px"}});
+    shareCard.append(h('div',{style:{fontSize:"12px",fontWeight:"700",color:"var(--ac)",marginBottom:"6px"}},"🔗 Oila a'zolariga ulashish"));
+    shareCard.append(h('div',{style:{fontSize:"11px",color:"var(--tx2)",lineHeight:"1.5",marginBottom:"8px"}},"Quyidagi havolani yuboring — oila a'zosi uni ochsa, hech narsa kiritmasdan to'g'ridan-to'g'ri kiradi."));
+    const urlBox = h('div',{style:{background:"var(--card)",borderRadius:"var(--r)",padding:"8px 10px",fontSize:"11px",color:"var(--tx3)",wordBreak:"break-all",marginBottom:"8px",border:"1px solid var(--br)"}},shareUrl);
+    shareCard.append(urlBox);
+    shareCard.append(btn("📋 Havolani nusxalash",async()=>{
+      try{ await navigator.clipboard.writeText(shareUrl); toast("Havola nusxalandi!"); }
+      catch{ prompt("Havolani nusxalang:",shareUrl); }
+    },{full:true,small:true}));
+    modal.append(shareCard);
+
     // Actions
     const acts=h('div',{style:{borderTop:"1px solid var(--br)",paddingTop:"14px",display:"flex",gap:"8px",flexWrap:"wrap"}});
     acts.append(btn("⚡ AI sozlama",()=>{close();showAIKey();},{outline:true,small:true}));
@@ -1336,6 +1349,12 @@ function showAIKey(){
 
 /* ═══ INIT ═══ */
 cfg = loadCfg();
+// URL parametrlaridan avtomatik kirish
+if(!cfg){
+  const p = new URLSearchParams(location.search);
+  const o=p.get('o'), r=p.get('r'), t=p.get('t');
+  if(o&&r&&t){ saveCfg({owner:o,repo:r,token:t,aiKey:""}); cfg=loadCfg(); }
+}
 if(cfg){
   db = new GDB(cfg.owner, cfg.repo, cfg.token);
   loadData();
