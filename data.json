@@ -454,6 +454,62 @@
       "unit": "",
       "min": null,
       "max": null
+    },
+    {
+      "id": "molbvuatpk1r8t",
+      "name": "Noma'lum",
+      "unit": "",
+      "min": null,
+      "max": null
+    },
+    {
+      "id": "molbvuat0s5s49",
+      "name": "Трипелфосфаты",
+      "unit": "",
+      "min": null,
+      "max": null
+    },
+    {
+      "id": "molbvuatqhteoz",
+      "name": "Мочекислого аммония",
+      "unit": "",
+      "min": null,
+      "max": null
+    },
+    {
+      "id": "molbvuatyp09d8",
+      "name": "Аморфные фосфаты",
+      "unit": "",
+      "min": null,
+      "max": null
+    },
+    {
+      "id": "molbvuatjt29ry",
+      "name": "Лейцина и тирозина",
+      "unit": "",
+      "min": null,
+      "max": null
+    },
+    {
+      "id": "molbvuatni6vjs",
+      "name": "Гематоидина и гемосидерина",
+      "unit": "",
+      "min": null,
+      "max": null
+    },
+    {
+      "id": "molbvuat5qge40",
+      "name": "Элементы спермы и простатического секрета",
+      "unit": "",
+      "min": null,
+      "max": null
+    },
+    {
+      "id": "molbvuat7zmlz7",
+      "name": "Споры дрожжевых грибков",
+      "unit": "",
+      "min": null,
+      "max": null
     }
   ],
   "doctorTypes": [
@@ -1544,6 +1600,262 @@
       "mid": "mol5igu8p2x7gz",
       "tid": "t3",
       "value": 3.65,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvuath0ha7p",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "mola4ysq3el7qh",
+      "value": 100,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvuatcqamid",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "mola4ysq8yk9aw",
+      "value": "соломенно-жёлтый",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvuatctp76j",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "mola4ysq96pymo",
+      "value": "прозрачная",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvuat0chfg6",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "mola4ysqjdrow3",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvuat8m28oz",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "mola4ysql7d5wu",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvuatbwlngz",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "mola4ysq9zscnt",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvuat93bypa",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "mola4ysq4ja5tu",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvuatiwhtz9",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "mola4ysqj08cn4",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvuatiuemzv",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "mola4ysqmqfb58",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvuatl4rl4i",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "mola4ysqmvh3j7",
+      "value": 1025,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvuatfjo2e6",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "mola4ysqwq44q8",
+      "value": 5.5,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvuatzr7jdo",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "mola4ysqdcpbtb",
+      "value": "0-1",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvuat8n75z3",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "mola4ysqytzxb3",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvuatzam61i",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "mola4ysqejr55b",
+      "value": "3-4",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvuat8ombgr",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "mola4ysq3lenbx",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvuatmv90sl",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "molbunph8i29g3",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvuathe2yvp",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "molbunph9wwx67",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvuatesmb16",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "molbunph33ztwm",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvuatb18df6",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "molbunph0erns7",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvuat3pwdlb",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "molbunphmqn3xw",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvuatoi9bdy",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "molbvuatpk1r8t",
+      "value": "+++",
+      "date": "2026-04-30",
+      "note": "слизь"
+    },
+    {
+      "id": "molbvuat4gi5zf",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "mola4ysr94nd9n",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvuatmyhn2d",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "mola4ysrll050h",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvuatt5gklz",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "mola4ysq3lenbx",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": "оксалаты"
+    },
+    {
+      "id": "molbvuatvm1n66",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "molbvuat0s5s49",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvuat0o4r54",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "molbvuatqhteoz",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvuat4fo4kx",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "molbvuatyp09d8",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvuatsfuuxh",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "molbvuatjt29ry",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvuatxaje5e",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "molbvuatni6vjs",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvuatyn4mb7",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "molbvuat5qge40",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvuatysoinu",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "mola4ysr4riz6v",
+      "value": "abs",
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvuatcy7dmx",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "molbvuat7zmlz7",
+      "value": "abs",
       "date": "2026-04-30",
       "note": ""
     }
