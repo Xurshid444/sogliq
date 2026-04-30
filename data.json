@@ -1314,6 +1314,238 @@
       "value": "abs",
       "date": "2026-04-30",
       "note": ""
+    },
+    {
+      "id": "molbvc7f0dl6w0",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "mola4ysq3el7qh",
+      "value": 6.32,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvc7fry9t20",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "mola5ogcz7f21s",
+      "value": 3.38,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvc7fl1d4oz",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "mola5ogc1by1jc",
+      "value": 2.45,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvc7fu4i9ux",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "mola5ogc3uyc2n",
+      "value": 0.43,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvc7faypfgp",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "mola5ogc32n6zl",
+      "value": 0.06,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvc7flwlzuu",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "mola5ogc2g48cl",
+      "value": 0.01,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvc7fzopov4",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "mola5ogcu9vkdp",
+      "value": 53.5,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvc7fdgrneb",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "mola5ogcq7lfb2",
+      "value": 38.8,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvc7fo1an2i",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "mola5ogc143i9p",
+      "value": 6.7,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvc7fcpt5em",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "mola5ogcjdtaab",
+      "value": 1,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvc7f9pfdg3",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "mola5ogcripu47",
+      "value": 0.01,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvc7fn10t5c",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "t5",
+      "value": 4.52,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvc7fgyk13a",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "t2",
+      "value": 135,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvc7fs7qdc1",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "mola5ogc66pm3i",
+      "value": 39.2,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvc7fal20zq",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "mola5ogczdxr20",
+      "value": 86.7,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvc7f3veu23",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "mola5ogca27dfh",
+      "value": 29.8,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvc7fr8ymv1",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "mola5ogcswp76m",
+      "value": 344,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvc7f04chdg",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "mola5ogc8ob4h0",
+      "value": 13.4,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvc7fg120uv",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "mola5ogcrglfpy",
+      "value": 45.7,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvc7fr42opr",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "t6",
+      "value": 293,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvc7fy4uiww",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "mola5ogca0ili2",
+      "value": 10,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvc7fzbqfoc",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "mola5ogcgl14qn",
+      "value": 16.3,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvc7ffwbxo9",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "mola5ogcmjp647",
+      "value": 0.29,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvc7fir2ls7",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "mola5ogco7cdk0",
+      "value": 14,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvc7f8nw0vo",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "t1",
+      "value": 5.4,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvc7fdkbknu",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "mola5ogcjuejit",
+      "value": 14,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvc7fy0qf5z",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "mola5ogcwsfzu6",
+      "value": 17,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvc7fcdktuu",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "mola5ogcgcya3w",
+      "value": 92,
+      "date": "2026-04-30",
+      "note": ""
+    },
+    {
+      "id": "molbvc7f55qy9j",
+      "mid": "mol5igu8p2x7gz",
+      "tid": "t3",
+      "value": 3.65,
+      "date": "2026-04-30",
+      "note": ""
     }
   ],
   "visits": [
