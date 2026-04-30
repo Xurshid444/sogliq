@@ -450,9 +450,10 @@ function renderMember(el){
   el.append(tabs);
 
   if(selTab==="tests"){
-    el.append(h('div',{style:{display:"flex",justifyContent:"flex-end",marginBottom:"10px"}},
-      btn("+ Tahlil",()=>showAddTest(m.id),{small:true})
-    ));
+    const testBtns = h('div',{style:{display:"flex",justifyContent:"flex-end",gap:"8px",marginBottom:"10px"}});
+    testBtns.append(btn("📄 Fayl yuklash",()=>showUploadTest(m.id),{small:true,outline:true}));
+    testBtns.append(btn("+ Tahlil",()=>showAddTest(m.id),{small:true}));
+    el.append(testBtns);
     if(tests.length===0){ el.append(h('div',{style:{textAlign:"center",padding:"30px",color:"var(--tx3)"}},"Hali tahlil yo'q")); return; }
     tests.forEach(t=>{
       const tt = getTest(t.tid);
@@ -749,6 +750,182 @@ function showAddVisit(mid){
       D.visits.push({id:uid(),mid,did:sel.value,date:iDate.value,diagnosis:iDiag.value,notes:iNotes.value});
       saveData(); close(); render();
     },{full:true}));
+  });
+}
+
+function showUploadTest(mid){
+  if(!cfg?.aiKey){ showAIKey(); toast("Avval AI kalitini kiriting","error"); return; }
+  showModal("📄 Tahlil faylini yuklash",(modal,close)=>{
+    modal.append(h('div',{style:{fontSize:"13px",color:"var(--tx2)",lineHeight:"1.6",marginBottom:"16px"}},"Tahlil natijasi rasmini yoki PDF faylini yuklang. AI avtomatik o'qib, barcha ko'rsatkichlarni chiqarib beradi."));
+
+    const dropZone = h('div',{style:{border:"2px dashed var(--br)",borderRadius:"var(--rl)",padding:"30px 20px",textAlign:"center",cursor:"pointer",transition:"all 0.2s",background:"var(--sec)"}});
+    const fileInput = h('input',{type:"file",accept:"image/*,.pdf",style:{display:"none"}});
+    const fileLabel = h('div');
+    fileLabel.append(h('div',{style:{fontSize:"32px",marginBottom:"8px",opacity:"0.4"}},"📎"));
+    fileLabel.append(h('div',{style:{fontSize:"14px",fontWeight:"600",color:"var(--tx2)",marginBottom:"4px"}},"Rasm yoki PDF tanlang"));
+    fileLabel.append(h('div',{style:{fontSize:"12px",color:"var(--tx3)"}},"JPG, PNG, PDF formatlar"));
+    dropZone.append(fileLabel);
+    dropZone.addEventListener('click',()=>fileInput.click());
+    dropZone.addEventListener('dragover',e=>{e.preventDefault();dropZone.style.borderColor="var(--ac)";dropZone.style.background="var(--acl)";});
+    dropZone.addEventListener('dragleave',()=>{dropZone.style.borderColor="var(--br)";dropZone.style.background="var(--sec)";});
+    dropZone.addEventListener('drop',e=>{e.preventDefault();dropZone.style.borderColor="var(--br)";dropZone.style.background="var(--sec)";if(e.dataTransfer.files[0])processFile(e.dataTransfer.files[0]);});
+    modal.append(dropZone);
+    modal.append(fileInput);
+
+    const iDate=makeInput("date"); iDate.value=new Date().toISOString().split("T")[0];
+    modal.append(h('div',{style:{marginTop:"16px"}},field("Tahlil sanasi",iDate)));
+
+    const statusDiv = h('div',{style:{display:"none",marginTop:"16px"}});
+    modal.append(statusDiv);
+
+    const resultsDiv = h('div',{style:{display:"none",marginTop:"16px"}});
+    modal.append(resultsDiv);
+
+    fileInput.addEventListener('change',()=>{ if(fileInput.files[0]) processFile(fileInput.files[0]); });
+
+    async function processFile(file){
+      // Validate
+      const ext = file.name.split('.').pop().toLowerCase();
+      const validImg = ['jpg','jpeg','png','webp','gif'];
+      const validDoc = ['pdf'];
+      if(!validImg.includes(ext) && !validDoc.includes(ext)){
+        toast("Faqat rasm (JPG/PNG) yoki PDF yuklang","error"); return;
+      }
+      if(file.size > 20*1024*1024){ toast("Fayl hajmi 20MB dan kichik bo'lishi kerak","error"); return; }
+
+      // Show file name
+      fileLabel.innerHTML = '';
+      fileLabel.append(h('div',{style:{fontSize:"14px",fontWeight:"600",color:"var(--ac)"}},"✓ "+file.name));
+      fileLabel.append(h('div',{style:{fontSize:"12px",color:"var(--tx3)",marginTop:"4px"}},(file.size/1024).toFixed(0)+" KB"));
+
+      // Show loading
+      statusDiv.style.display = "block";
+      statusDiv.innerHTML = '';
+      statusDiv.append(h('div',{style:{display:"flex",alignItems:"center",gap:"10px",padding:"12px",background:"var(--infl)",borderRadius:"var(--r)"}},
+        h('div',{style:{width:"20px",height:"20px",border:"2px solid var(--br)",borderTopColor:"var(--inf)",borderRadius:"50%",animation:"sp 0.7s linear infinite",flexShrink:"0"}}),
+        h('div',{style:{fontSize:"13px",color:"var(--inf)",fontWeight:"500"}},"AI tahlil natijalarini o'qimoqda...")
+      ));
+
+      // Read file as base64
+      const base64 = await new Promise((resolve,reject)=>{
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = () => reject(new Error("Fayl o'qishda xatolik"));
+        reader.readAsDataURL(file);
+      });
+
+      // Determine media type
+      let mediaType = "image/jpeg";
+      if(ext==="png") mediaType="image/png";
+      else if(ext==="webp") mediaType="image/webp";
+      else if(ext==="gif") mediaType="image/gif";
+      else if(ext==="pdf") mediaType="application/pdf";
+
+      // Build content for Claude
+      const contentBlock = ext==="pdf" ?
+        { type:"document", source:{ type:"base64", media_type:"application/pdf", data:base64 } } :
+        { type:"image", source:{ type:"base64", media_type:mediaType, data:base64 } };
+
+      // Known test types for matching
+      const knownTypes = D.testTypes.map(t=>({id:t.id,name:t.name,unit:t.unit,min:t.min,max:t.max}));
+
+      try {
+        const res = await fetch("https://api.anthropic.com/v1/messages",{
+          method:"POST",
+          headers:{"Content-Type":"application/json","x-api-key":cfg.aiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+          body:JSON.stringify({
+            model:"claude-sonnet-4-20250514", max_tokens:2000,
+            messages:[{role:"user",content:[
+              contentBlock,
+              {type:"text",text:`Bu laboratoriya tahlili natijasi. Iltimos, barcha ko'rsatkichlarni o'qib, JSON formatda chiqar.
+
+Tizimdagi mavjud tahlil turlari:
+${JSON.stringify(knownTypes)}
+
+MUHIM QOIDALAR:
+- Agar ko'rsatkich tizimdagi tahlil turiga mos kelsa, o'sha "id" ni ishlat
+- Agar mos kelmasa, "id" ni null qil va "newName", "newUnit", "newMin", "newMax" maydonlarini to'ldir
+- Faqat JSON qaytar, boshqa hech narsa yozma
+- Raqamlarni to'g'ri o'qi
+
+Javob formati (faqat JSON, boshqa text yo'q):
+[
+  {"id":"t1","value":5.4,"note":""},
+  {"id":null,"value":12.3,"newName":"Kreatinin","newUnit":"mkmol/l","newMin":44,"newMax":97,"note":""}
+]`}
+            ]}]
+          })
+        });
+        const data = await res.json();
+        if(data.error) throw new Error(data.error.message);
+
+        const text = data.content?.map(c=>c.text||"").join("")||"";
+        // Extract JSON from response
+        let jsonStr = text.trim();
+        const jsonMatch = jsonStr.match(/\[[\s\S]*\]/);
+        if(!jsonMatch) throw new Error("AI natija qaytarmadi");
+        const results = JSON.parse(jsonMatch[0]);
+
+        if(!Array.isArray(results)||results.length===0) throw new Error("Tahlil natijalari topilmadi");
+
+        // Show results for confirmation
+        statusDiv.style.display = "none";
+        resultsDiv.style.display = "block";
+        resultsDiv.innerHTML = '';
+        resultsDiv.append(h('div',{style:{fontSize:"14px",fontWeight:"700",marginBottom:"10px"}},"Topilgan natijalar:"));
+
+        const checkboxes = [];
+        results.forEach((r,i)=>{
+          const existing = r.id ? getTest(r.id) : null;
+          const name = existing ? existing.name : (r.newName||"Noma'lum");
+          const unit = existing ? existing.unit : (r.newUnit||"");
+          const mn = existing ? existing.min : (r.newMin??null);
+          const mx = existing ? existing.max : (r.newMax??null);
+
+          const row = h('div',{style:{display:"flex",alignItems:"center",gap:"10px",padding:"10px 12px",background:"var(--card)",border:"1px solid var(--br)",borderRadius:"var(--r)",marginBottom:"6px"}});
+          const cb = h('input',{type:"checkbox",checked:"true",style:{width:"18px",height:"18px",accentColor:"var(--ac)",flexShrink:"0"}});
+          cb.checked = true;
+          checkboxes.push({cb,r,existing,name,unit,mn,mx});
+
+          const info = h('div',{style:{flex:"1",minWidth:"0"}});
+          info.append(h('div',{style:{fontWeight:"600",fontSize:"13px"}},name));
+          if(!existing) info.append(h('div',{style:{fontSize:"11px",color:"var(--inf)",fontWeight:"500"}},"Yangi tahlil turi"));
+          const right = h('div',{style:{display:"flex",alignItems:"center",gap:"6px",flexShrink:"0"}});
+          right.append(h('span',{html:`<b style="font-size:15px">${r.value}</b> <span style="font-size:11px;color:var(--tx3)">${unit}</span>`}));
+          right.append(h('span',{html:badge(r.value,mn,mx)}));
+
+          row.append(cb); row.append(info); row.append(right);
+          resultsDiv.append(row);
+        });
+
+        resultsDiv.append(h('div',{style:{marginTop:"14px"}},
+          btn("✓ Belgilanganlarni saqlash",()=>{
+            const date = iDate.value;
+            let saved = 0;
+            checkboxes.forEach(({cb,r,existing,name,unit,mn,mx})=>{
+              if(!cb.checked) return;
+              let tid = r.id;
+              // If new test type, create it
+              if(!tid || !existing){
+                tid = uid();
+                D.testTypes.push({id:tid,name:name,unit:unit,min:mn,max:mx});
+              }
+              D.tests.push({id:uid(),mid,tid,value:r.value,date,note:r.note||""});
+              saved++;
+            });
+            if(saved>0){
+              saveData();
+              toast(`${saved} ta natija saqlandi!`);
+            }
+            close(); render();
+          },{full:true})
+        ));
+
+      } catch(e){
+        statusDiv.innerHTML = '';
+        statusDiv.append(h('div',{style:{padding:"12px",background:"var(--dnl)",borderRadius:"var(--r)",fontSize:"13px",color:"var(--dn)",fontWeight:"500"}},"Xatolik: "+e.message));
+      }
+    }
   });
 }
 
