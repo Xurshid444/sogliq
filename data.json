@@ -35,6 +35,12 @@
       "name": "Sumayya",
       "birthYear": 2021,
       "gender": "Ayol"
+    },
+    {
+      "id": "mol5je7wtbgkgs",
+      "name": "Zubayr",
+      "birthYear": 2021,
+      "gender": "Erkak"
     }
   ],
   "testTypes": [
