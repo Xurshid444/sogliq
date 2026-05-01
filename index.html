@@ -152,6 +152,7 @@ let toastTimer = null;
 
 function loadCfg(){ try { return JSON.parse(localStorage.getItem(CONF_KEY)); } catch{ return null; } }
 function saveCfg(c){ localStorage.setItem(CONF_KEY, JSON.stringify(c)); cfg=c; }
+const isAdmin = () => cfg?.role !== "viewer";
 
 function toast(msg, type="ok"){
   $$('.toast').forEach(t=>t.remove());
@@ -342,7 +343,7 @@ function renderSetup(app){
     try {
       const d = new GDB(o,r,t);
       await d.test();
-      saveCfg({owner:o,repo:r,token:t,aiKey:""});
+      saveCfg({owner:o,repo:r,token:t,aiKey:"",role:"admin"});
       db = d;
       loadData();
     } catch(e){ errDiv.textContent=e.message; errDiv.style.display="block"; }
@@ -366,14 +367,15 @@ function renderHeader(){
   left.append(info);
   hdr.append(left);
 
-  const right = h('div',{style:{display:"flex",gap:"5px"}});
+  const right = h('div',{style:{display:"flex",gap:"5px",alignItems:"center"}});
+  if(!isAdmin()) right.append(h('span',{style:{fontSize:"10px",fontWeight:"700",padding:"3px 8px",borderRadius:"20px",background:"var(--infl)",color:"var(--inf)"}},"👁 Kuzatuvchi"));
   const btnS = {border:"none",background:"var(--sec)",width:"32px",height:"32px",borderRadius:"50%",fontSize:"14px",cursor:"pointer",color:"var(--tx3)"};
   right.append(h('button',{style:btnS,title:"Yangilash",onClick:async()=>{
     D=null; render();
     try{ const r=await db.read(); D=r?{...EMPTY,...r}:{...EMPTY}; toast("Yangilandi!"); } catch(e){ toast(e.message,"error"); D={...EMPTY}; }
     render();
   }},"↻"));
-  right.append(h('button',{style:btnS,title:"Sozlamalar",onClick:()=>showSettings()},"⚙"));
+  if(isAdmin()) right.append(h('button',{style:btnS,title:"Sozlamalar",onClick:()=>showSettings()},"⚙"));
   hdr.append(right);
   return hdr;
 }
@@ -398,7 +400,7 @@ function renderHome(el){
   // Header row
   const hr = h('div',{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"12px"}});
   hr.append(h('h2',{style:{fontSize:"17px",fontWeight:"700"}},"Oila a'zolari"));
-  hr.append(btn("+ Qo'shish",()=>showAddMember(),{small:true}));
+  if(isAdmin()) hr.append(btn("+ Qo'shish",()=>showAddMember(),{small:true}));
   el.append(hr);
 
   if(D.members.length===0){
@@ -462,7 +464,7 @@ function renderMember(el){
   prof.append(profRow);
   const btns = h('div',{style:{display:"flex",gap:"8px",flexWrap:"wrap"}});
   btns.append(btn("⚡ AI tahlil",()=>runAI(m.id),{small:true}));
-  btns.append(btn("O'chirish",()=>{
+  if(isAdmin()) btns.append(btn("O'chirish",()=>{
     if(!confirm(m.name+" o'chirilsinmi?")) return;
     D.members=D.members.filter(x=>x.id!==m.id);
     D.tests=D.tests.filter(x=>x.mid!==m.id);
@@ -485,10 +487,12 @@ function renderMember(el){
   el.append(tabs);
 
   if(selTab==="tests"){
-    const testBtns = h('div',{style:{display:"flex",justifyContent:"flex-end",gap:"8px",marginBottom:"10px"}});
-    testBtns.append(btn("📄 Fayl yuklash",()=>showUploadTest(m.id),{small:true,outline:true}));
-    testBtns.append(btn("+ Tahlil",()=>showAddTest(m.id),{small:true}));
-    el.append(testBtns);
+    if(isAdmin()){
+      const testBtns = h('div',{style:{display:"flex",justifyContent:"flex-end",gap:"8px",marginBottom:"10px"}});
+      testBtns.append(btn("📄 Fayl yuklash",()=>showUploadTest(m.id),{small:true,outline:true}));
+      testBtns.append(btn("+ Tahlil",()=>showAddTest(m.id),{small:true}));
+      el.append(testBtns);
+    }
     if(tests.length===0){ el.append(h('div',{style:{textAlign:"center",padding:"30px",color:"var(--tx3)"}},"Hali tahlil yo'q")); return; }
     tests.forEach(t=>{
       const tt = getTest(t.tid);
@@ -500,17 +504,19 @@ function renderMember(el){
       const right = h('div',{style:{display:"flex",alignItems:"center",gap:"8px",flexShrink:"0"}});
       right.append(h('span',{html:`<b style="font-size:15px">${t.value}</b> <span style="font-size:11px;color:var(--tx3)">${tt?.unit||""}</span>`}));
       right.append(h('span',{html:badge(t.value,tt?.min,tt?.max)}));
-      right.append(h('button',{style:{border:"none",background:"none",color:"var(--tx3)",cursor:"pointer",fontSize:"16px",padding:"0 2px"},onClick:(e)=>{e.stopPropagation();D.tests=D.tests.filter(x=>x.id!==t.id);saveData();render();}},"×"));
+      if(isAdmin()) right.append(h('button',{style:{border:"none",background:"none",color:"var(--tx3)",cursor:"pointer",fontSize:"16px",padding:"0 2px"},onClick:(e)=>{e.stopPropagation();D.tests=D.tests.filter(x=>x.id!==t.id);saveData();render();}},"×"));
       card.append(right);
       el.append(card);
     });
   }
 
   if(selTab==="visits"){
-    const visitBtns = h('div',{style:{display:"flex",justifyContent:"flex-end",gap:"8px",marginBottom:"10px"}});
-    visitBtns.append(btn("📄 Fayl yuklash",()=>showUploadVisit(m.id),{small:true,outline:true}));
-    visitBtns.append(btn("+ Ko'rik",()=>showAddVisit(m.id),{small:true}));
-    el.append(visitBtns);
+    if(isAdmin()){
+      const visitBtns = h('div',{style:{display:"flex",justifyContent:"flex-end",gap:"8px",marginBottom:"10px"}});
+      visitBtns.append(btn("📄 Fayl yuklash",()=>showUploadVisit(m.id),{small:true,outline:true}));
+      visitBtns.append(btn("+ Ko'rik",()=>showAddVisit(m.id),{small:true}));
+      el.append(visitBtns);
+    }
     if(visits.length===0){ el.append(h('div',{style:{textAlign:"center",padding:"30px",color:"var(--tx3)"}},"Hali ko'rik yo'q")); return; }
     visits.forEach(v=>{
       const dt = getDoc(v.did);
@@ -520,7 +526,7 @@ function renderMember(el){
       li.append(h('div',{style:{fontWeight:"600",fontSize:"14px"}},dt?.name||"?"));
       li.append(h('div',{style:{fontSize:"12px",color:"var(--tx3)",marginTop:"2px"}},fmtD(v.date)));
       top.append(li);
-      top.append(h('button',{style:{border:"none",background:"none",color:"var(--tx3)",cursor:"pointer",fontSize:"16px"},onClick:()=>{D.visits=D.visits.filter(x=>x.id!==v.id);saveData();render();}},"×"));
+      if(isAdmin()) top.append(h('button',{style:{border:"none",background:"none",color:"var(--tx3)",cursor:"pointer",fontSize:"16px"},onClick:()=>{D.visits=D.visits.filter(x=>x.id!==v.id);saveData();render();}},"×"));
       card.append(top);
       if(v.diagnosis) card.append(h('div',{style:{marginTop:"8px",fontSize:"13px",fontWeight:"600",color:"var(--inf)"}},v.diagnosis));
       if(v.notes) card.append(h('div',{style:{marginTop:"4px",fontSize:"13px",color:"var(--tx2)",lineHeight:"1.5"}},v.notes));
@@ -1349,11 +1355,11 @@ function showAIKey(){
 
 /* ═══ INIT ═══ */
 cfg = loadCfg();
-// URL parametrlaridan avtomatik kirish
+// URL parametrlaridan avtomatik kirish — viewer sifatida
 if(!cfg){
   const p = new URLSearchParams(location.search);
   const o=p.get('o'), r=p.get('r'), t=p.get('t');
-  if(o&&r&&t){ saveCfg({owner:o,repo:r,token:t,aiKey:""}); cfg=loadCfg(); }
+  if(o&&r&&t){ saveCfg({owner:o,repo:r,token:t,aiKey:"",role:"viewer"}); cfg=loadCfg(); }
 }
 if(cfg){
   db = new GDB(cfg.owner, cfg.repo, cfg.token);
