@@ -1355,12 +1355,10 @@ function showAIKey(){
 
 /* ═══ INIT ═══ */
 cfg = loadCfg();
-// URL parametrlaridan avtomatik kirish — viewer sifatida
-if(!cfg){
-  const p = new URLSearchParams(location.search);
-  const o=p.get('o'), r=p.get('r'), t=p.get('t');
-  if(o&&r&&t){ saveCfg({owner:o,repo:r,token:t,aiKey:"",role:"viewer"}); cfg=loadCfg(); }
-}
+// URL parametrlaridan kirish bo'lsa — har doim viewer sifatida saqlash
+const _p = new URLSearchParams(location.search);
+const _o=_p.get('o'), _r=_p.get('r'), _t=_p.get('t');
+if(_o&&_r&&_t){ saveCfg({owner:_o,repo:_r,token:_t,aiKey:cfg?.aiKey||"",role:"viewer"}); cfg=loadCfg(); }
 if(cfg){
   db = new GDB(cfg.owner, cfg.repo, cfg.token);
   loadData();
